@@ -78,7 +78,7 @@ int kprintf(char *format, ...) {
 				if(toggle == True){
 					int len = 8 - (9 - num_length);
 					while(len > 0){
-						buffer[index++] = '!';
+						buffer[index++] = ' ';
 						len--; 
 					}
 					toggle = False;
