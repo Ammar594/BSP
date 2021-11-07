@@ -27,6 +27,7 @@ int kprintf(char *format, ...) {
 					index++;
 				}
 				str++;
+				continue;
 			}
 			else if (*str == '%'){
 				buffer[index] = '%';
@@ -59,89 +60,82 @@ int kprintf(char *format, ...) {
 				str++;
 			}
 			if (*str == 'p'){
-				unsigned addr = va_arg(ap, unsigned);
-				// adding 0x to the buffer
+				long unsigned addr = va_arg(ap, long unsigned);
 				unsigned cpy = addr;
-				char tmp_buffer[32];
-				int num_length = 0;
-				while (cpy > 0){
+				char tmp_buffer[10];
+				int num_length = 9;
+				do{
 					unsigned char tmp = cpy % 16;
 					if(tmp >= 10) tmp += 55 ;
 					else tmp += 48;
-					tmp_buffer[num_length] = tmp;
-					cpy /= 16;
-					num_length++; 
-				}
-				tmp_buffer[num_length++] = 'x';
-				tmp_buffer[num_length++] = '0';
-				num_length--;
+					tmp_buffer[num_length--] = tmp;
+					cpy /= 16; 
+				}while(cpy != 0);
+
+				tmp_buffer[num_length--] = 'x';
+				tmp_buffer[num_length--] = '0';
+
 				if(toggle == True){
-					int len = 7 - num_length;
+					int len = 8 - (9 - num_length);
 					while(len > 0){
-						buffer[index++] = ' ';
+						buffer[index++] = '!';
 						len--; 
 					}
 					toggle = False;
 				}
-				// copy the number characters to buffer
-				while (num_length >= 0)
-				{
-					buffer[index] = tmp_buffer[num_length--];
-					index++; 
+				for(int i = num_length + 1; i < 10;i++) {
+					buffer[index] = tmp_buffer[i];
+					index++;
 				}
 				str++;
 			}
 			else if (*str=='i') {
 				int num = va_arg(ap, int);
-				char tmp_buffer[32];
-				int num_length = 0;
+				char tmp_buffer[10];
+				int num_length = 9;
 				int cpy = num;
 				if ( num < 0 ){
 					cpy *= -1;
 				}
-				while (1){
-					char tmp = (cpy % 10) + 48;
-					tmp_buffer[num_length] = tmp;
+				do{
+					unsigned char tmp = (cpy % 10) + 48;
+					tmp_buffer[num_length--] = tmp;
 					cpy /= 10;
 					if (cpy == 0) break;
-					num_length++;
-				}
-				num_length++;
+				}while(cpy != 0);
 				if (toggle2){
 					if(num <0){
-						int len = 7 - num_length;
+						int len = 7 - (9 - num_length);
 						while(len > 0){
-							tmp_buffer[num_length++] = '0';
+							tmp_buffer[num_length--] = '0';
 							len--; 
 						}
-						tmp_buffer[num_length++] = '-';
+						tmp_buffer[num_length--] = '-';
 					}
 					else{
-						int len = 8 - num_length;
+						int len = 8 - (9 - num_length);
 						while(len > 0){
-							tmp_buffer[num_length++] = '0';
+							tmp_buffer[num_length--] = '0';
 							len--; 
 						}
 					}
 					toggle2 = False;
 				}
 				else if(num < 0){
-					tmp_buffer[num_length++] = '-';
+					tmp_buffer[num_length--] = '-';
 				}
 				
 				if(toggle){
-					int len = 8 - num_length;
+					int len = 8 - (9 - num_length);
 					while(len > 0){
 						buffer[index++] = ' ';
 						len--; 
 					}
 					toggle = False;
 				}
-				num_length--;
-				// copy the number characters to buffer
-				while (num_length >= 0)
-				{
-					buffer[index++] = tmp_buffer[num_length--];
+				for(int i = num_length + 1; i < 10;i++) {
+					buffer[index] = tmp_buffer[i];
+					index++;
 				}
 				str++;
 			}
@@ -157,7 +151,7 @@ int kprintf(char *format, ...) {
 				}while(num != 0);
 				// copy the number characters to buffer
 				if(toggle){
-					int len = 8 - (9 - num_length + 1);
+					int len = 8 - (9 - num_length);
 					while(len > 0){
 						buffer[index++] = ' ';
 						len--; 
@@ -165,7 +159,7 @@ int kprintf(char *format, ...) {
 					toggle = False;
 				}
 				else if(toggle2 == True){
-					int len = 8 - (9 - num_length + 1);
+					int len = 8 - (9 - num_length);
 					while(len > 0){
 						buffer[index++] = '0';
 						len--; 
@@ -216,13 +210,7 @@ int kprintf(char *format, ...) {
 			}
 			else
 				{
-			// 	// kprintf("ERROR: unknow format ");
-			// 	// uart_putc('%');
-			// 	// char t = *str;
-			// 	// uart_putc(t);
-			// 	// uart_putc('\n');
-			// 	// va_arg(ap, unsigned);
-			// 	// str++;
+				//error reporting when the argument is not valid	
 				char * err = "ERROR: unknown format: ";
 				for(int i = 0;i < 23;i++){
 					buffer[index++] = err[i];

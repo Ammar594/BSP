@@ -37,7 +37,7 @@ static inline void test_kprintf(void) {
 	kprintf("test negative number with field width 8: %08i\n", -333);
 	kprintf("test negative number with field width 8: %8i\n", 0);
 	kprintf("test negative number with field width 8: %08i\n", 0);
-	kprintf("test negative number %i\n", 3);
+	kprintf("test integer none negative number %i\n", 3);
 	kprintf("this is an address! %p\n", &x);
 	kprintf("this is an address! %8p\n", &x);
 	kprintf("testing a string: %s\n", "what a sexy kernal!");
