@@ -21,13 +21,10 @@ static inline uint32_t asm_read(uint32_t addr) {
 
 void uart_init(void) {
 
-	uint32_t old;
-
 	/* Disable UART */
 	asm_write(UART0_CR, 0x0);
 
 	asm_write(UART0_LCRH_FEN, 0x0);
-
 	/* Enable UART0, receive, and transmit */
 	// enable transfer
 	asm_write(UART0_CR_TXE, 0x1);
