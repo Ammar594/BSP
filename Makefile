@@ -172,4 +172,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 submission:
-	git archive --format=tar.gz -o submission.tar.gz main
+	git archive --format=tar.gz -o submission.tar.gz master
