@@ -1,6 +1,16 @@
 #include <arch/bsp/kprintf.h> // Platzahlter für die Headerdatei, die euer kprintf enthält
 #include <config.h>
 
+// Mode bits
+#define RESET 0x00
+#define UND 0x04
+#define USR 0x10
+#define FIQ 0x11
+#define IRQ 0x12
+#define SVC 0x13
+#define SYS 0x1f
+
+
 void _check_return_jump(void);
 void _check_registers(void);
 void _check_cpsr(void);
