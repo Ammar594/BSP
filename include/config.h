@@ -21,18 +21,16 @@
 #include <arch/bsp/uart.h>
 static inline void test_kprintf(void) {
 	long unsigned psr;
-	__asm__ volatile("mrs %0, cpsr":"=r" (psr));
+	char c;
+	 __asm__ volatile("mrs %0, cpsr":"=r" (psr));
     kprintf(" init cpsr: %p\n",psr);
 	while(1){
-		char c = uart_getc();
+		c = uart_getc();
 		kprintf("Es wurde folgender Charakter eingegeben: %c, In Hexadezimal: %x, In Dezimal: %08u\n", c, c, c);
-		__asm__ volatile("mov %0, lr":"=r" (psr));
-        kprintf("lr: %p\n",psr);
-		__asm__ volatile("mov %0, pc":"=r" (psr));
-        kprintf("pc: %p\n",psr);
-		__asm__ ("bkpt 0xFFFF");
-		__asm__ volatile("mrs %0, cpsr":"=r" (psr));
-        kprintf("cpsr: %p\n",psr);
+		__asm__ ("bkpt 0x0");
+		long unsigned psr1;
+		__asm__ volatile("mrs %0, cpsr":"=r" (psr1));
+        kprintf("in the loop cpsr: %p\n",psr1);
 	}
 }
 
