@@ -71,8 +71,21 @@ void software_interrupt(){
 
 void prefetch_abort(){
     // store registers!
-    kprintf("this is a prefetch abort!\n");
     __asm__ volatile("stmdb r13, {r0-r12,lr}");
+        kprintf("this is a prefetch abort!\n");
+        long unsigned psr;
+    __asm__ volatile("mrs %0, spsr":"=r" (psr));
+        kprintf("spsr: %p\n",psr);
+    __asm__ volatile("mov %0, lr":"=r" (psr));
+        kprintf("lr: %p\n",psr);    
+    __asm__ volatile("mrs %0, cpsr":"=r" (psr));
+        kprintf("cpsr: %p\n",psr);    
+    __asm__ volatile("ldmdb r13, {r0-r12,lr}\n"
+                     "add r1, lr, #0xE8\n"
+                     "mrs r0, spsr\n"    
+                     "msr cpsr, r0\n"
+                     "mov pc, r1"
+                    );                            
 }
 
 void data_abort(){
