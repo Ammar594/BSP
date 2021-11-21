@@ -20,12 +20,10 @@
 #include <arch/bsp/kprintf.h>
 #include <arch/bsp/uart.h>
 static inline void test_kprintf(void) {
-	long unsigned reg;
 	while(1){
 		char c = uart_getc();
 		kprintf("Es wurde folgender Charakter eingegeben: %c, In Hexadezimal: %x, In Dezimal: %08u\n", c, c, c);
-		__asm__ volatile (" mov %0, r13" :"=r" (reg):);
-		kprintf("stack pointer at= %p \n", reg);
+		__asm__ ("bkpt 0xFFFF");
 	}
 }
 
