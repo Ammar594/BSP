@@ -10,7 +10,7 @@ void increment_counter() {
 }
 
 void start_kernel(){
-	initStacks();
+	//initStacks();
 	// initializing UART
 	uart_init();
 	test_kprintf();

@@ -37,6 +37,9 @@ _bsprak:
 	/* Validen Stack Pointer setzten */
 	ldr sp,=0x20000
 	/* Zu c Code springen */
+	bl  _initStacks
+.globl _start_kernel	
+_start_kernel:	
 	bl  start_kernel
 .Lend:
 	WFI
