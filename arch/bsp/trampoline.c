@@ -41,14 +41,6 @@ __asm__ volatile( "ldr r0,= _ivt\n"
 	            );                                                                        
 }
 
-// _undefined_instruction: .word undefined_instruction
-//     _software_interrupt: .word software_interrupt
-//     _prefetch_abort: .word prefetch_abort
-//     _data_abort: .word data_abort
-//     _not_used: .word not_used
-//     _irq: .word irq
-//     _fiq: .word fiq
-
 void irq(){
         // store registers!
     __asm__ volatile("stmdb r13, {r0-r12,lr}");
@@ -104,45 +96,110 @@ void print_registers(long unsigned * regs){
             );
 }
 
+void status_registers(long unsigned PSR, int bool){
+    if(bool) kprintf("CPSR: ");
+    else kprintf("SPSR: ");
+    if(((PSR >> 31) & 0x00000001) == 0x1) kprintf("N");
+    else kprintf("_");
+    if(((PSR >> 30) & 0x00000001) == 0x1) kprintf("Z");
+    else kprintf("_");
+    if(((PSR >> 29) & 0x00000001) == 0x1) kprintf("C");
+    else kprintf("_");
+    if(((PSR >> 28) & 0x00000001) == 0x1) kprintf("V");
+    else kprintf("_");
+    kprintf(" ");
+    if(((PSR >> 7) & 0x00000001) == 0x1) kprintf("I");
+    else kprintf("_");
+    if(((PSR >> 6) & 0x00000001) == 0x1) kprintf("F");
+    else kprintf("_");
+    if(((PSR >> 5) & 0x00000001) == 0x1) kprintf("T");
+    else kprintf("_");
+    kprintf("        (0x%08x)\n",PSR);
+}
+
+void register_specific(){
+    kprintf(">>> Aktuelle modusspezifische Register <<<\n");
+    long unsigned LR_svc, LR_abt, LR_fiq, LR_irq, LR_und;
+    long unsigned SP_svc, SP_abt, SP_fiq, SP_irq, SP_und ;
+    long unsigned SPSR_svc, SPSR_abt, SPSR_fiq, SPSR_irq, SPSR_und;
+    __asm__ volatile("MRS %0, LR_svc":"=r"(LR_svc));
+    __asm__ volatile("MRS %0, LR_abt":"=r"(LR_abt));
+    __asm__ volatile("MRS %0, LR_fiq":"=r"(LR_fiq));
+    __asm__ volatile("MRS %0, LR_irq":"=r"(LR_irq));
+    __asm__ volatile("MRS %0, LR_und":"=r"(LR_und));
+    __asm__ volatile("MRS %0, SP_svc":"=r"(SP_svc));
+    __asm__ volatile("MRS %0, SP_abt":"=r"(SP_abt));
+    __asm__ volatile("MRS %0, SP_fiq":"=r"(SP_fiq));
+    __asm__ volatile("MRS %0, SP_irq":"=r"(SP_irq));
+    __asm__ volatile("MRS %0, SP_und":"=r"(SP_und));
+    __asm__ volatile("MRS %0, SPSR_svc":"=r"(SPSR_svc));
+    __asm__ volatile("MRS %0, SPSR_abt":"=r"(SPSR_abt));
+    __asm__ volatile("MRS %0, SPSR_fiq":"=r"(SPSR_fiq));
+    __asm__ volatile("MRS %0, SPSR_irq":"=r"(SPSR_irq));
+    __asm__ volatile("MRS %0, SPSR_und":"=r"(SPSR_und));
+
+    kprintf("             LR             SP       SPSR\n");
+    kprintf("User/System: 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF\n"
+            "Supervisor:  0x%08x     0x%08x     %s   (0x%08x)\n"
+            "Abort:       0x%08x     0x%08x     %s   (0x%08x)\n"
+            "FIQ:         0x%08x     0x%08x     %s   (0x%08x)\n"
+            "IRQ:         0x%08x     0x%08x     %s   (0x%08x)\n"
+            "Undefined:   0x%08x     0x%08x     %s   (0x%08x)\n",
+            LR_svc,SP_svc,"_z_zafa",SPSR_svc,LR_abt,SP_abt,"_z_zafa",SPSR_abt,
+            LR_fiq,SP_fiq,"_z_zafa",SPSR_fiq,LR_irq,SP_irq,"_z_zafa",SPSR_irq,
+            LR_und,SP_und,"_z_zafa",SPSR_und
+            );
+}
+
 void software_interrupt(){ // Supervisor Call
     // store registers!
-    __asm__ volatile("stmdb r13, {r0-r12,lr}");
+    __asm__ volatile("SUB lr, lr, #4\n"
+                     "PUSH {lr}\n"
+                     "PUSH {R0-R12}"
+                     //"STMDB SP, {R0-R12,LR}^"
+                     //"PUSH {R0-R12}"
+                     );
     long unsigned LR;
     long unsigned regs[16];
-    __asm__ volatile("mov %0, LR":"=r"(LR));
+    long unsigned CPSR, SPSR;
+    __asm__ volatile("MRS %0, CPSR": "=r"(CPSR));
+    __asm__ volatile("MRS %0, SPSR": "=r"(SPSR));
+    __asm__ volatile("MOV %0, LR":"=r"(LR));
     LR = LR - 4;
     kprintf("###########################################################################\n");
     kprintf("Software Interrupt aka Supervisor Call an Adresse 0x%08x\n",LR);
     register_reader(regs);
     print_registers(regs);
+    kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
+    status_registers(CPSR,1);
+    status_registers(SPSR,0);
+    //register_specific();
+    __asm__ volatile(
+                     //"LDMDB SP!, {R0-R12,SP}^"
+                     "POP {R0-R12}\n"
+                     "LDM SP!,{PC}^"
+                     );
 }
 
 void prefetch_abort(){
-    // store registers!
-    __asm__ volatile("STMDB SP, {R0-R12,LR}");
-    kprintf("###########################################################################");
-    //kprintf("Data Abort an Adresse: %8p", )
-
-
-
-
-
-
-
-
-
-
-
-
-
-    __asm__ volatile("LDMDB SP, {R0-R12,PC}^\n"
-                     //"ADD LR, LR, #0x4\n"
-                     //"MOV PC, LR"
-                     //"mrs r12, spsr\n"    
-                     //"msr cpsr, r12\n"
-                     //"add lr,lr,#0x4\n"
-                     //"mov pc, lr"
-                    );                            
+    __asm__ volatile("SUB LR, LR, #4\n"
+                     "STMDB SP!, {R0-R12,LR}");
+    long unsigned LR;
+    long unsigned regs[16];
+    long unsigned CPSR, SPSR;
+    __asm__ volatile("MRS %0, CPSR": "=r"(CPSR));
+    __asm__ volatile("MRS %0, SPSR": "=r"(SPSR));
+    __asm__ volatile("MOV %0, LR":"=r"(LR));
+    LR = LR - 4;
+    kprintf("###########################################################################\n");
+    kprintf("Prefetch Abort an Adresse 0x%08x\n",LR);
+    register_reader(regs);
+    print_registers(regs);
+    kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
+    status_registers(CPSR,1);
+    status_registers(SPSR,0);
+    register_specific();
+    __asm__ volatile("LDMDB SP!, {R0-R12,SP}^");     
 }
 
 void data_abort(){
