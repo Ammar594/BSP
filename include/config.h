@@ -27,8 +27,8 @@ static inline void test_kprintf(void) {
 	while(1){
 		c = uart_getc();
 		kprintf("Es wurde folgender Charakter eingegeben: %c, In Hexadezimal: %x, In Dezimal: %08u\n", c, c, c);
-		//__asm__ ("bkpt 0x0");
-		__asm__ ("SVC 0xFFFFFF");
+		__asm__ ("bkpt 0x0");
+		//__asm__ ("SVC 0xFFFFFF");
 		__asm__ volatile("mrs %0, cpsr":"=r" (psr));
         kprintf("in the loop cpsr: %p\n",psr);
 	}

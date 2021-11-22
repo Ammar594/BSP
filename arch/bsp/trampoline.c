@@ -85,14 +85,14 @@ void register_reader(long unsigned * regs){
 
 void print_registers(long unsigned * regs){
     kprintf(">>> Registerschnappschuss (aktueller Modus) <<<\n");
-    kprintf("R0:  0x%08x R8:  0x%08x\n"
-            "R1:  0x%08x R9:  0x%08x\n"
-            "R2:  0x%08x R10: 0x%08x\n"
-            "R3:  0x%08x R11: 0x%08x\n"
-            "R4:  0x%08x R12: 0x%08x\n"
-            "R5:  0x%08x SP:  0x%08x\n"
-            "R6:  0x%08x LR:  0x%08x\n"
-            "R7:  0x%08x PC:  0x%08x\n",
+    kprintf("R0:  0x%08x  R8:  0x%08x\n"
+            "R1:  0x%08x  R9:  0x%08x\n"
+            "R2:  0x%08x  R10: 0x%08x\n"
+            "R3:  0x%08x  R11: 0x%08x\n"
+            "R4:  0x%08x  R12: 0x%08x\n"
+            "R5:  0x%08x  SP:  0x%08x\n"
+            "R6:  0x%08x  LR:  0x%08x\n"
+            "R7:  0x%08x  PC:  0x%08x\n",
             regs[0],regs[8],
             regs[1],regs[9],
             regs[2],regs[10],
@@ -103,6 +103,45 @@ void print_registers(long unsigned * regs){
             regs[7],regs[15]
             );
 }
+
+void print_psr(long unsigned PSR, int bool){
+    if (bool) kprintf("SPSR: ");
+    else kprintf("CPSR: ");
+    if((PSR >> 31 & 0x00000001) == 1) kprintf("N");
+    else kprintf("_");
+    if((PSR >> 30 & 0x00000001) == 1) kprintf("Z");
+    else kprintf("_");
+    if((PSR >> 29 & 0x00000001) == 1) kprintf("C");
+    else kprintf("_");
+    if((PSR >> 28 & 0x00000001) == 1) kprintf("V");
+    else kprintf("_");
+    if((PSR >> 7 & 0x00000001) == 1) kprintf("I");
+    else kprintf("_");
+    if((PSR >> 6 & 0x00000001) == 1) kprintf("F");
+    else kprintf("_");
+    if((PSR >> 5 & 0x00000001) == 1) kprintf("T");
+    else kprintf("_");
+    kprintf(" ");
+    if((PSR & 0x0000001F) == 0x10) kprintf("User");
+    else if((PSR & 0x0000001F) == 0x11) kprintf("FIQ");
+    else if((PSR & 0x0000001F) == 0x12) kprintf("IRQ");
+    else if((PSR & 0x0000001F) == 0x13) kprintf("Supervisor");
+    else if((PSR & 0x0000001F) == 0x17) kprintf("Abort");
+    else if((PSR & 0x0000001F) == 0x1C) kprintf("Undefined");
+    else if((PSR & 0x0000001F) == 0x1F) kprintf("System");
+    kprintf("       (0x%08x)\n",PSR);
+}
+
+void print_status_register(){
+    kprintf(">>> Aktuelle Statusregister (SPSR des aktuellen Modus) <<<\n");
+    long unsigned CPSR, SPSR;
+    __asm__ volatile("mrs %0, cpsr":"=r"(CPSR));
+    __asm__ volatile("mrs %0, spsr":"=r"(SPSR));
+    print_psr(CPSR,0);
+    print_psr(SPSR,1);
+}
+
+
 
 void software_interrupt(){ // Supervisor Call
     // store registers!
@@ -115,13 +154,24 @@ void software_interrupt(){ // Supervisor Call
     kprintf("Software Interrupt aka Supervisor Call an Adresse 0x%08x\n",LR);
     register_reader(regs);
     print_registers(regs);
+    print_status_register();
 }
 
 void prefetch_abort(){
     // store registers!
-    __asm__ volatile("STMDB SP, {R0-R12,LR}");
-    kprintf("###########################################################################");
+    //__asm__ volatile("STMDB SP, {R0-R12,LR}");
+    //kprintf("###########################################################################");
     //kprintf("Data Abort an Adresse: %8p", )
+    __asm__ volatile("stmdb r13, {r0-r12,lr}");
+    long unsigned LR;
+    long unsigned regs[16];
+    __asm__ volatile("mov %0, LR":"=r"(LR));
+    LR = LR - 4;
+    kprintf("###########################################################################\n");
+    kprintf("Software Interrupt aka Supervisor Call an Adresse 0x%08x\n",LR);
+    register_reader(regs);
+    print_registers(regs);
+    print_status_register();
 
 
 
