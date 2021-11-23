@@ -24,16 +24,26 @@ static inline void test_kprintf(void) {
 	char c;
 	 __asm__ volatile("mrs %0, cpsr":"=r" (psr));
     kprintf(" init cpsr: %p\n",psr);
+
+	/*Diese Anwendung soll bei der Eingabe von einem s ein Supervisor
+	Call auslösen, bei der Eingabe eines a einen Data Abort auslösen, bei der Eingabe eines u eine Undefined
+	Instruction ausführen und bei der Eingabe eines p einen Prefetch Abort auslösen.*/
 	while(1){
 		c = uart_getc();
-		kprintf("Es wurde folgender Charakter eingegeben: %c, In Hexadezimal: %x, In Dezimal: %08u\n", c, c, c);
-		//__asm__ ("bkpt 0x0");
-		__asm__ ("SVC 0xFFFFFF");
-		__asm__ volatile("mrs %0, cpsr":"=r" (psr));
+		kprintf("Es wurde folgender Charakter eingegeben: %c\n",c);
+		
+			if(c == 's')
+				// Supervisor Mode
+      			__asm__ ("SVC 0xFFFFFF");
+
+    		else if(c =='p')
+				// Prefetch Abort
+      			__asm__ ("BKPT 0xFFFF");
+
+		//__asm__ volatile("mrs %0, cpsr":"=r" (psr));
         kprintf("in the loop cpsr: %p\n",psr);
 	}
 }
-
 /**
  * Erst ab Aufgabenblatt 2 relevant
  */

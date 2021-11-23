@@ -1,24 +1,24 @@
 .global _initStacks
 _initStacks:    
-/*setup the stack for IRQ*/
-    LDR R0, =0x21000
+/*setup the stack for IRQ 2kb 800 hex*/
+    LDR R0, =0x20800
     MSR SP_irq, R0
 
-/*setup the stack for FIQ*/
-    LDR R0, =0x22000
-    MSR SP_fiq, R0
+/*setup the stack for FIQ 2kb 800 hex*/
+    LDR R1, =0x21600
+    MSR SP_fiq, R1
 
-/*setup the stack for Prefetch Abort*/
-    LDR R0, =0x23000
-    MSR SP_abt, R0
+/*setup the stack for Prefetch Abort 2kb 800 hex*/
+    LDR R2, =0x22400
+    MSR SP_abt, R2
 
-/*setup the stack for Undefined*/
-    LDR R0, =0x24000
-    MSR SP_und, R0
+/*setup the stack for Undefined 2kb 800 hex*/
+    LDR R3, =0x23200
+    MSR SP_und, R3
 
-/* setup stack for User/System */
-    LDR R0, =0x25000
-    MSR SP_usr, R0
+/* setup stack for User/System 2kb or 800 hex*/
+    LDR R4, =0x24000
+    MSR SP_usr, R4
 
 /* IVT Address */
     LDR R0,= _ivt

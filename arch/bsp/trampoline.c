@@ -66,48 +66,52 @@ void status_register_flags(long unsigned PSR, char * flags){
     if(((PSR >> 28) & 0x00000001) == 0x1) flags[3] = 'V';
     else flags[3] = '_';
     flags[4] = ' ';
-    if(((PSR >> 7) & 0x00000001) == 0x1) flags[5] = 'I';
+    if(((PSR >> 9) & 0x00000001) == 0x1) flags[5] = 'E';
     else flags[5] = '_';
-    if(((PSR >> 6) & 0x00000001) == 0x1) flags[6] = 'F';
+    if(((PSR >> 7) & 0x00000001) == 0x1) flags[6] = 'I';
     else flags[6] = '_';
-    if(((PSR >> 5) & 0x00000001) == 0x1) flags[7] = 'T';
+    if(((PSR >> 6) & 0x00000001) == 0x1) flags[7] = 'F';
     else flags[7] = '_';
-    flags[8] = '\0';
+    if(((PSR >> 5) & 0x00000001) == 0x1) flags[8] = 'T';
+    else flags[8] = '_';
+    flags[9] = '\0';
 }
 
 void status_registers(long unsigned PSR, int bool){
     if(bool) kprintf("CPSR: ");
     else kprintf("SPSR: ");
-    char flags[9];
+    char flags[10];
     status_register_flags(PSR,flags);
     kprintf("%s",flags);
-    if((PSR & 0x0000001F) == 0x10) kprintf("User");
-    else if((PSR & 0x0000001F) == 0x11) kprintf("FIQ");
-    else if((PSR & 0x0000001F) == 0x12) kprintf("IRQ");
-    else if((PSR & 0x0000001F) == 0x13) kprintf("Supervisor");
-    else if((PSR & 0x0000001F) == 0x17) kprintf("Abort");
-    else if((PSR & 0x0000001F) == 0x1C) kprintf("Undefined");
-    else if((PSR & 0x0000001F) == 0x1F) kprintf("System");
+    if((PSR & 0x0000001F) == 0x10) kprintf(" User");
+    else if((PSR & 0x0000001F) == 0x11) kprintf(" FIQ");
+    else if((PSR & 0x0000001F) == 0x12) kprintf(" IRQ");
+    else if((PSR & 0x0000001F) == 0x13) kprintf(" Supervisor");
+    else if((PSR & 0x0000001F) == 0x17) kprintf(" Abort");
+    else if((PSR & 0x0000001F) == 0x1C) kprintf(" Undefined");
+    else if((PSR & 0x0000001F) == 0x1F) kprintf(" System");
     kprintf("        (0x%08x)\n",PSR);
 }
 
 void register_specific(){
     kprintf(">>> Aktuelle modusspezifische Register <<<\n");
-    long unsigned LR_svc, LR_abt, LR_fiq, LR_irq, LR_und;
-    long unsigned SP_svc, SP_abt, SP_fiq, SP_irq, SP_und ;
+    long unsigned LR_svc, LR_abt, LR_fiq, LR_irq, LR_und, LR_usr;
+    long unsigned SP_svc, SP_abt, SP_fiq, SP_irq, SP_und, SP_usr;
     long unsigned SPSR_svc, SPSR_abt, SPSR_fiq, SPSR_irq, SPSR_und;
-    char flags_svc[9], flags_abt[9], flags_fiq[9], flags_irq[9], flags_und[9];
+    char flags_svc[10], flags_abt[10], flags_fiq[10], flags_irq[10], flags_und[10];
 
     __asm__ volatile("MRS %0, LR_svc":"=r"(LR_svc));
     __asm__ volatile("MRS %0, LR_abt":"=r"(LR_abt));
     __asm__ volatile("MRS %0, LR_fiq":"=r"(LR_fiq));
     __asm__ volatile("MRS %0, LR_irq":"=r"(LR_irq));
     __asm__ volatile("MRS %0, LR_und":"=r"(LR_und));
+    __asm__ volatile("MRS %0, LR_usr":"=r"(LR_usr));
     __asm__ volatile("MRS %0, SP_svc":"=r"(SP_svc));
     __asm__ volatile("MRS %0, SP_abt":"=r"(SP_abt));
     __asm__ volatile("MRS %0, SP_fiq":"=r"(SP_fiq));
     __asm__ volatile("MRS %0, SP_irq":"=r"(SP_irq));
     __asm__ volatile("MRS %0, SP_und":"=r"(SP_und));
+    __asm__ volatile("MRS %0, SP_usr":"=r"(SP_usr));
     __asm__ volatile("MRS %0, SPSR_svc":"=r"(SPSR_svc));
     __asm__ volatile("MRS %0, SPSR_abt":"=r"(SPSR_abt));
     __asm__ volatile("MRS %0, SPSR_fiq":"=r"(SPSR_fiq));
@@ -120,15 +124,18 @@ void register_specific(){
     status_register_flags(SPSR_irq,flags_irq);
     status_register_flags(SPSR_und,flags_und);
 
-    kprintf("             LR             SP       SPSR\n");
-    kprintf("User/System: 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF\n"
+    kprintf("             LR             SP             SPSR\n");
+    kprintf("User/System: 0x%08x     0x%08x\n"
             "Supervisor:  0x%08x     0x%08x     %s   (0x%08x)\n"
             "Abort:       0x%08x     0x%08x     %s   (0x%08x)\n"
             "FIQ:         0x%08x     0x%08x     %s   (0x%08x)\n"
             "IRQ:         0x%08x     0x%08x     %s   (0x%08x)\n"
             "Undefined:   0x%08x     0x%08x     %s   (0x%08x)\n",
-            LR_svc,SP_svc,flags_svc,SPSR_svc,LR_abt,SP_abt,flags_abt,SPSR_abt,
-            LR_fiq,SP_fiq,flags_fiq,SPSR_fiq,LR_irq,SP_irq,flags_irq,SPSR_irq,
+            LR_usr, SP_usr,
+            LR_svc,SP_svc,flags_svc,SPSR_svc,
+            LR_abt,SP_abt,flags_abt,SPSR_abt,
+            LR_fiq,SP_fiq,flags_fiq,SPSR_fiq,
+            LR_irq,SP_irq,flags_irq,SPSR_irq,
             LR_und,SP_und,flags_und,SPSR_und
             );
 }
@@ -136,10 +143,10 @@ void register_specific(){
 void software_interrupt(){ // Supervisor Call
     // store registers!
     __asm__ volatile(
-                     //"ADD lr, lr, #4\n"
-                     //"PUSH {lr}\n"
-                     //"PUSH {R0-R12}"
-                     "STMDB SP, {R0-R12,LR}^"
+                    //  "SUB lr, lr, #4\n"
+                    //  "PUSH {lr}\n"
+                    //  "PUSH {R0-R12}"
+                     "STMDB SP!, {R0-R12,LR}"
                      );
     long unsigned LR;
     long unsigned regs[16];
@@ -157,15 +164,43 @@ void software_interrupt(){ // Supervisor Call
     status_registers(SPSR,0);
     register_specific();
     __asm__ volatile(
-                     "LDMDB SP!, {R0-R12,LR}^"
+                     "LDMDB SP!, {R0-R12,LR}\n"
+                     "SUBS PC,LR,#4"
                      //"POP {R0-R12}\n"
                      //"LDM SP!,{PC}^"
                      );
 }
 
+void print_IFSR_status(){
+     long unsigned IFSR;
+     long unsigned IFAR;
+     // reading IFSR and IFAR registers
+    __asm__ volatile("MRC p15, 0, %0, c5, c0, 1":"=r"(IFSR));
+    __asm__ volatile("MRC p15, 0, %0, c5, c0, 1":"=r"(IFAR));
+    IFSR = IFSR & 0x1F; // mask the status bits and set the other bits to 0
+    if(IFSR == 0b00000) kprintf("No function, reset value\n");
+    else if(IFSR == 0b00001) kprintf("Fehler: No function\n");
+    else if(IFSR == 0b00010) kprintf("Fehler: Debug event fault\n");
+    else if(IFSR == 0b00011) kprintf("Fehler: Access Flag fault on Section\n");
+    else if(IFSR == 0b00100) kprintf("Fehler: No function\n");
+    else if(IFSR == 0b00101) kprintf("Fehler: Translation fault on Section\n");
+    else if(IFSR == 0b00110) kprintf("Fehler: Access Flag fault on Page\n");
+    else if(IFSR == 0b00111) kprintf("Fehler: Translation fault on Page\n");
+    else if(IFSR == 0b01000) kprintf("Fehler: Precise External Abort\n");
+    else if(IFSR == 0b01001) kprintf("Fehler: Domain fault on Section\n");
+    else if(IFSR == 0b01010) kprintf("Fehler: No function\n");
+    else if(IFSR == 0b01011) kprintf("Fehler: Domain fault on Page\n");
+    else if(IFSR == 0b01100) kprintf("Fehler: External abort on Section\n");
+    else if(IFSR == 0b01101) kprintf("Fehler: Permission fault on Section\n");
+    else if(IFSR == 0b01110) kprintf("Fehler: External abort on Page\n");
+    else if(IFSR == 0b01111) kprintf("Fehler: Permission fault on Page\n");
+    else if(IFSR >= 0b10000) kprintf("Fehler: No function\n");
+    kprintf("Fehler: an der Adresse: 0x%08x \n",IFAR);
+}
+
 void prefetch_abort(){
-    __asm__ volatile("SUB LR, LR, #4\n"
-                     "STMDB SP!, {R0-R12,LR}");
+    __asm__ volatile("SUBS LR, LR, #8\n"
+                     "STMIB SP, {R0-R12,LR}^");
     long unsigned LR;
     long unsigned regs[16];
     long unsigned CPSR, SPSR;
@@ -175,13 +210,14 @@ void prefetch_abort(){
     LR = LR - 4;
     kprintf("###########################################################################\n");
     kprintf("Prefetch Abort an Adresse 0x%08x\n",LR);
+    print_IFSR_status();
     register_reader(regs);
     print_registers(regs);
     kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
     status_registers(CPSR,1);
     status_registers(SPSR,0);
     register_specific();
-    __asm__ volatile("LDMDB SP!, {R0-R12,PC}^");     
+    __asm__ volatile("LDMIB SP!, {R0-R12,PC}^\n");     
 }
 
 void data_abort(){
