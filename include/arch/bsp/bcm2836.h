@@ -10,6 +10,23 @@
 #define GPIO_BASE	(IO_BASE+0x200000)
 
 
+/* System Timer Registers */
+#define TIMER_BASE 0x7E003000
+// System Timer Contorl/Status
+#define CS (TIMER_BASE+0x00)
+// System Timer Counter Lower 32 bits
+#define CLO (TIMER_BASE+0x04)
+// System Timer Counter Higher 32 bits
+#define CHI (TIMER_BASE+0x08)
+// System Timer Compare 0
+#define C0 (TIMER_BASE+0x0c)
+// System Timer Compare 1
+#define C1 (TIMER_BASE+0x10)
+// System Timer Compare 2
+#define C2 (TIMER_BASE+0x14)
+// System Timer Compare 3
+#define C3 (TIMER_BASE+0x18)
+
 
 /* GPFSEL = Function Select Registers */
 /*   Each reg 3 groups of 10 */
