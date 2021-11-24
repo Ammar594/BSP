@@ -32,14 +32,32 @@ _enableAlignCheck:
 	/* neues SCTLR speichern */
 	mcr p15, 0, r0, c1, c0, 0
 
-
 _bsprak:
 	/* Validen Stack Pointer setzten */
 	ldr sp,=0x20000
+    LDR R0, =0x21000
+    MSR SP_irq, R0
+
+    LDR R1, =0x22000
+    MSR SP_fiq, R1
+
+    LDR R2, =0x23000
+    MSR SP_abt, R2
+
+    LDR R3, =0x24000
+    MSR SP_und, R3
+
+    LDR R4, =0x25000
+    MSR SP_usr, R4
+
+/* IVT Address */
+    LDR R0,= _ivt
+    MCR p15,0,r0,c12,c0,0
+
+/* enter User mode */
+    MSR CPSR, 0xD1
+
 	/* Zu c Code springen */
-	bl  _initStacks
-.globl _start_kernel	
-_start_kernel:	
 	bl  start_kernel
 .Lend:
 	WFI

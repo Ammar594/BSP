@@ -10,8 +10,12 @@
 #define GPIO_BASE	(IO_BASE+0x200000)
 
 
+
+
+
+
 /* System Timer Registers */
-#define TIMER_BASE 0x7E003000
+//#define TIMER_BASE 0x7E003000
 // System Timer Contorl/Status
 #define CS (TIMER_BASE+0x00)
 // System Timer Counter Lower 32 bits
