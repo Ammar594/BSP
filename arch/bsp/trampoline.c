@@ -1,20 +1,30 @@
 #include <arch/bsp/trampoline.h>
 #include <arch/bsp/kprintf.h>
 
-void irq(){
-        // store registers!
-    __asm__ volatile("stmdb r13, {r0-r12,lr}");
-}
-
-void fiq(){
-    // store registers!
-    __asm__ volatile("stmdb r13, {r0-r7,lr}");
-}
-
-void undefined_instruction(){
-    // store registers!
-    __asm__ volatile("stmdb r13, {r0-r12,lr}");
-}
+struct modi_register{
+	int reg[13];
+	int cpsr;
+	int spsr;
+	int lr;
+	int pc;
+	int sp_usr;
+	int lr_usr;
+	int sp_fiq;
+	int lr_fiq;
+	int spsr_fiq;
+	int sp_irq;
+	int lr_irq;
+	int spsr_irq;
+	int sp_abt;
+	int lr_abt;
+	int spsr_abt;
+	int sp_und;
+	int lr_und;
+	int spsr_und;
+	int sp_svc;
+	int lr_svc;
+	int spsr_svc;
+};
 
 void register_reader(long unsigned * regs){
     __asm__ volatile("mov %0, R0":"=r"(regs[0]));
@@ -77,6 +87,35 @@ void status_register_flags(long unsigned PSR, char * flags){
     flags[9] = '\0';
 }
 
+void irq_handler(){
+        // store registers!
+    __asm__ volatile("stmdb r13, {r0-r12,lr}");
+}
+
+void fiq_handler(){
+    // store registers!
+    __asm__ volatile("stmdb r13, {r0-r7,lr}");
+}
+
+void undefined_instruction_handler(){
+    // store registers!
+    long unsigned LR;
+    long unsigned regs[16];
+    long unsigned CPSR, SPSR;
+    __asm__ volatile("MRS %0, CPSR": "=r"(CPSR));
+    __asm__ volatile("MRS %0, SPSR": "=r"(SPSR));
+    __asm__ volatile("MOV %0, LR":"=r"(LR));
+    LR = LR - 4;
+    kprintf("###########################################################################\n");
+    kprintf("Software Interrupt aka Supervisor Call an Adresse 0x%08x\n",LR);
+    register_reader(regs);
+    print_registers(regs);
+    kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
+    status_registers(CPSR,1);
+    status_registers(SPSR,0);
+    register_specific();
+}
+
 void status_registers(long unsigned PSR, int bool){
     if(bool) kprintf("CPSR: ");
     else kprintf("SPSR: ");
@@ -125,29 +164,17 @@ void register_specific(){
     status_register_flags(SPSR_und,flags_und);
 
     kprintf("             LR             SP             SPSR\n");
-    kprintf("User/System: 0x%08x     0x%08x\n"
-            "Supervisor:  0x%08x     0x%08x     %s   (0x%08x)\n"
-            "Abort:       0x%08x     0x%08x     %s   (0x%08x)\n"
-            "FIQ:         0x%08x     0x%08x     %s   (0x%08x)\n"
-            "IRQ:         0x%08x     0x%08x     %s   (0x%08x)\n"
-            "Undefined:   0x%08x     0x%08x     %s   (0x%08x)\n",
-            LR_usr, SP_usr,
-            LR_svc,SP_svc,flags_svc,SPSR_svc,
-            LR_abt,SP_abt,flags_abt,SPSR_abt,
-            LR_fiq,SP_fiq,flags_fiq,SPSR_fiq,
-            LR_irq,SP_irq,flags_irq,SPSR_irq,
-            LR_und,SP_und,flags_und,SPSR_und
-            );
+    kprintf("User/System: 0x%08x     0x%08x\n",LR_usr, SP_usr);
+    kprintf("Supervisor:  0x%08x     0x%08x     %s   (0x%08x)\n",LR_svc,SP_svc,flags_svc,SPSR_svc);
+    kprintf("Abort:       0x%08x     0x%08x     %s   (0x%08x)\n",LR_abt,SP_abt,flags_abt,SPSR_abt);
+    kprintf("FIQ:         0x%08x     0x%08x     %s   (0x%08x)\n",LR_fiq,SP_fiq,flags_fiq,SPSR_fiq);
+    kprintf("IRQ:         0x%08x     0x%08x     %s   (0x%08x)\n",LR_irq,SP_irq,flags_irq,SPSR_irq);
+    kprintf("Undefined:   0x%08x     0x%08x     %s   (0x%08x)\n",LR_und,SP_und,flags_und,SPSR_und);
+
 }
 
-void software_interrupt(){ // Supervisor Call
+void software_interrupt_handler(){ // Supervisor Call
     // store registers!
-    __asm__ volatile(
-                    //  "SUB lr, lr, #4\n"
-                    //  "PUSH {lr}\n"
-                    //  "PUSH {R0-R12}"
-                     "STMDB SP!, {R0-R12,LR}"
-                     );
     long unsigned LR;
     long unsigned regs[16];
     long unsigned CPSR, SPSR;
@@ -163,12 +190,10 @@ void software_interrupt(){ // Supervisor Call
     status_registers(CPSR,1);
     status_registers(SPSR,0);
     register_specific();
-    __asm__ volatile(
-                     "LDMDB SP!, {R0-R12,LR}\n"
-                     "SUBS PC,LR,#4"
-                     //"POP {R0-R12}\n"
-                     //"LDM SP!,{PC}^"
-                     );
+}
+
+void data_abort_handler(){
+
 }
 
 void print_IFSR_status(){
@@ -198,9 +223,7 @@ void print_IFSR_status(){
     kprintf("Fehler: an der Adresse: 0x%08x \n",IFAR);
 }
 
-void prefetch_abort(){
-    __asm__ volatile("SUBS LR, LR, #8\n"
-                     "STMIB SP, {R0-R12,LR}^");
+void prefetch_abort_handler(){
     long unsigned LR;
     long unsigned regs[16];
     long unsigned CPSR, SPSR;
@@ -217,12 +240,12 @@ void prefetch_abort(){
     status_registers(CPSR,1);
     status_registers(SPSR,0);
     register_specific();
-    __asm__ volatile("LDMIB SP!, {R0-R12,PC}^\n");     
+    while(1);
 }
 
 void data_abort(){
     // store registers!
-    __asm__ volatile("stmdb r13, {r0-r12,lr}");
+    kprintf("this is a data abort!\n");
 }
 
 void reset(){
