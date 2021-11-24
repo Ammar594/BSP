@@ -27,7 +27,7 @@ void start_kernel(){
 			break;
 		case 'd':
 		    bad = (unsigned long *)0x09000000;
-			bad = 0x1234567;
+			bad = (unsigned long *)0x1234567;
 			break;
 		case 'u':
 			__asm__ volatile(".globl TEST\n"
