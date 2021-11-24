@@ -34,7 +34,7 @@ undefined_instruction:
 	ldmia sp!,{r0-r12,pc}^
 
 software_interrupt:
-	stmdb sp!,{r0-r12,lr}
+	stmdb sp!,{r8-r12,lr}
 	mrs r0, spsr
 	mrs r1, cpsr
 	stmdb sp!, {r0-r1}
@@ -43,7 +43,7 @@ software_interrupt:
 	ldmia sp!, {r0-r1}
 	msr spsr_cxfs, r0
 	msr cpsr_cxfs, r1
-	ldmia sp!,{r0-r12,pc}^
+	ldmia sp!,{r8-r12,pc}^
 
 prefetch_abort:
     adds lr, lr, #4

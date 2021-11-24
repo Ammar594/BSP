@@ -25,10 +25,10 @@ void start_kernel(){
 		case 'p':
 			__asm__ volatile("BKPT 0xFFFF");
 			break;
-		case 'd':
-		    bad = (unsigned long *)0x09000000;
-			bad = (unsigned long *)0x1234567;
-			break;
+		// case 'd':
+		//     bad = (unsigned long *)0x09000000;
+		// 	bad = (unsigned long *)0x1234567;
+		// 	break;
 		case 'u':
 			__asm__ volatile(".globl TEST\n"
 							 "TEST:\n"
