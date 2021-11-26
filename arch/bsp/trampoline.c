@@ -2,7 +2,7 @@
 #include <arch/bsp/kprintf.h>
 
 struct registers
-{
+{   char flags_svc[11], flags_abt[11], flags_fiq[11], flags_irq[11], flags_und[11];
     unsigned LR_svc;
     unsigned LR_abt;
     unsigned LR_fiq;
@@ -19,11 +19,11 @@ struct registers
     unsigned SPSR_abt;
     unsigned SPSR_fiq;
     unsigned SPSR_irq;
-    int SPSR_und;
+    unsigned SPSR_und;
 };
 
 
-void print_registers(  unsigned * regs){
+void print_registers(unsigned * regs){
     kprintf(">>> Registerschnappschuss (aktueller Modus) <<<\n");
     kprintf("R0:  0x%08x  R8:  0x%08x\n"
             "R1:  0x%08x  R9:  0x%08x\n"
@@ -45,7 +45,7 @@ void print_registers(  unsigned * regs){
 } 
 
 
-void register_reader( unsigned * regs){
+void register_reader(unsigned * regs){
     asm volatile("mov %0, R0":"=r"(regs[0]));
     asm volatile("mov %0, R1":"=r"(regs[1]));
     asm volatile("mov %0, R2":"=r"(regs[2]));
@@ -76,13 +76,14 @@ void status_register_flags( unsigned PSR, char * flags){
     flags[4] = ' ';
     if(((PSR >> 9) & 0x00000001) == 0x1) flags[5] = 'E';
     else flags[5] = '_';
-    if(((PSR >> 7) & 0x00000001) == 0x1) flags[6] = 'I';
-    else flags[6] = '_';
-    if(((PSR >> 6) & 0x00000001) == 0x1) flags[7] = 'F';
+    flags[6] = ' ';
+    if(((PSR >> 7) & 0x00000001) == 0x1) flags[7] = 'I';
     else flags[7] = '_';
-    if(((PSR >> 5) & 0x00000001) == 0x1) flags[8] = 'T';
+    if(((PSR >> 6) & 0x00000001) == 0x1) flags[8] = 'F';
     else flags[8] = '_';
-    flags[9] = '\0';
+    if(((PSR >> 5) & 0x00000001) == 0x1) flags[9] = 'T';
+    else flags[9] = '_';
+    flags[10] = '\0';
 }
 
 void status_registers( unsigned PSR, int bool){
@@ -128,45 +129,73 @@ void print_IFSR_status(){
     kprintf("Fehler: an der Adresse: 0x%08x \n",IFAR);
 }
 
-void register_specific(){
+void register_specific(char mode){
     kprintf(">>> Aktuelle modusspezifische Register <<<\n");
     struct registers regs;
-    char flags_svc[10], flags_abt[10], flags_fiq[10], flags_irq[10], flags_und[10];
+    if(mode != 's'){
+        asm volatile("MRS %0, LR_svc":"=r"(regs.LR_svc));
+        asm volatile("MRS %0, SP_svc":"=r"(regs.SP_svc));
+        asm volatile("MRS %0, SPSR_svc":"=r"(regs.SPSR_svc));
+    }
+    else{
+        asm volatile("MOV %0, LR":"=r"(regs.LR_svc));
+        asm volatile("MOV %0, SP":"=r"(regs.SP_svc));
+        asm volatile("MRS %0, SPSR":"=r"(regs.SPSR_svc));
+    }
+    if(mode != 'u'){
+        asm volatile("MRS %0, LR_und":"=r"(regs.LR_und));
+        asm volatile("MRS %0, SP_und":"=r"(regs.SP_und));
+        asm volatile("MRS %0, SPSR_und":"=r"(regs.SPSR_und));
+    }
+    else{
+        asm volatile("MOV %0, LR":"=r"(regs.LR_und));
+        asm volatile("MOV %0, SP":"=r"(regs.SP_und));
+        asm volatile("MRS %0, SPSR":"=r"(regs.SPSR_und));
+    }
+    if(mode != 'p'){
+        asm volatile("MRS %0, SP_abt":"=r"(regs.SP_abt));
+        asm volatile("MRS %0, LR_abt":"=r"(regs.LR_abt));
+        asm volatile("MRS %0, SPSR_abt":"=r"(regs.SPSR_abt));
+    }
+    else{
+        asm volatile("MOV %0, SP":"=r"(regs.SP_abt));
+        asm volatile("MOV %0, LR":"=r"(regs.LR_abt));
+        asm volatile("MRS %0, SPSR":"=r"(regs.SPSR_abt));
+    }
+    if(mode != 'a'){
+        asm volatile("MRS %0, SP_abt":"=r"(regs.SP_abt));
+        asm volatile("MRS %0, LR_abt":"=r"(regs.LR_abt));
+        asm volatile("MRS %0, SPSR_abt":"=r"(regs.SPSR_abt));
+    }
+    else{
+        asm volatile("MOV %0, SP":"=r"(regs.SP_abt));
+        asm volatile("MOV %0, LR":"=r"(regs.LR_abt));
+        asm volatile("MRS %0, SPSR":"=r"(regs.SPSR_abt));
+    }
     
-    asm volatile("MRS %0, LR_svc":"=r"(regs.LR_svc));
-    asm volatile("MRS %0, LR_abt":"=r"(regs.LR_abt));
     asm volatile("MRS %0, LR_fiq":"=r"(regs.LR_fiq));
     asm volatile("MRS %0, LR_irq":"=r"(regs.LR_irq));
-    asm volatile("MRS %0, LR_und":"=r"(regs.LR_und));
-    //regs.LR_und = 0;
     asm volatile("MRS %0, LR_usr":"=r"(regs.LR_usr));
-    asm volatile("MRS %0, SP_abt":"=r"(regs.SP_abt));
     asm volatile("MRS %0, SP_fiq":"=r"(regs.SP_fiq));
     asm volatile("MRS %0, SP_irq":"=r"(regs.SP_irq));
-    //asm volatile("MRS %0, SP_und":"=r"(regs.SP_und));
-    regs.SP_und = 0;
-    asm volatile("MRS %0, SP_svc":"=r"(regs.SP_svc));
-     asm volatile("MRS %0, SP_usr":"=r"(regs.SP_usr));
-    asm volatile("MRS %0, SPSR_svc":"=r"(regs.SPSR_svc));
-    asm volatile("MRS %0, SPSR_abt":"=r"(regs.SPSR_abt));
+    asm volatile("MRS %0, SP_usr":"=r"(regs.SP_usr));
     asm volatile("MRS %0, SPSR_fiq":"=r"(regs.SPSR_fiq));
     asm volatile("MRS %0, SPSR_irq":"=r"(regs.SPSR_irq));
-    //asm volatile("MRS %0, SPSR_und":"=r"(regs.SPSR_und));
-    regs.SPSR_und = 0;
+    
 
-    status_register_flags(regs.SPSR_svc,flags_svc);
-    status_register_flags(regs.SPSR_abt,flags_abt);
-    status_register_flags(regs.SPSR_fiq,flags_fiq);
-    status_register_flags(regs.SPSR_irq,flags_irq);
-    status_register_flags(regs.SPSR_und,flags_und);
+    status_register_flags(regs.SPSR_svc,regs.flags_svc);
+    status_register_flags(regs.SPSR_abt,regs.flags_abt);
+    status_register_flags(regs.SPSR_fiq,regs.flags_fiq);
+    status_register_flags(regs.SPSR_irq,regs.flags_irq);
+    status_register_flags(regs.SPSR_und,regs.flags_und);
 
     kprintf("             LR             SP             SPSR\n");
     kprintf("User/System: 0x%08x     0x%08x\n",regs.LR_usr, regs.SP_usr);
-    kprintf("Supervisor:  0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_svc,regs.SP_svc,flags_svc,regs.SPSR_svc);
-    kprintf("Abort:       0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_abt,regs.SP_abt,flags_abt,regs.SPSR_abt);
-    kprintf("FIQ:         0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_fiq,regs.SP_fiq,flags_fiq,regs.SPSR_fiq);
-    kprintf("IRQ:         0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_irq,regs.SP_irq,flags_irq,regs.SPSR_irq);
-    kprintf("Undefined:   0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_und,regs.SP_und,flags_und,regs.SPSR_und);
+    kprintf("Supervisor:  0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_svc,regs.SP_svc,regs.flags_svc,regs.SPSR_svc);
+    kprintf("Abort:       0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_abt,regs.SP_abt,regs.flags_abt,regs.SPSR_abt);
+    kprintf("FIQ:         0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_fiq,regs.SP_fiq,regs.flags_fiq,regs.SPSR_fiq);
+    kprintf("IRQ:         0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_irq,regs.SP_irq,regs.flags_irq,regs.SPSR_irq);
+    kprintf("Undefined:   0x%08x     0x%08x     %s   (0x%08x)\n",regs.LR_und,regs.SP_und,regs.flags_und,regs.SPSR_und);
 }
 
 
@@ -185,7 +214,8 @@ void undefined_instruction_handler(){
       unsigned CPSR, SPSR;
     asm volatile("MRS %0, CPSR": "=r"(CPSR));
     asm volatile("MRS %0, SPSR": "=r"(SPSR));
-    asm volatile("MOV %0, LR":"=r"(LR));
+    asm volatile("MRS %0, LR_usr":"=r"(LR));
+    LR -= 4;
     kprintf("###########################################################################\n");
     kprintf("Software Interrupt aka Supervisor Call an Adresse 0x%08x\n",LR);
     register_reader(regs);
@@ -193,7 +223,7 @@ void undefined_instruction_handler(){
     kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
     status_registers(CPSR,1);
     status_registers(SPSR,0);
-    register_specific();
+    register_specific('u');
     kprintf("System angehalten\n");
     while(1);
 }
@@ -206,7 +236,8 @@ void software_interrupt_handler(){ // Supervisor Call
     asm volatile("MRS %0, CPSR": "=r"(CPSR));
     kprintf("current status: 0x%08x\n",CPSR);
     asm volatile("MRS %0, SPSR": "=r"(SPSR));
-    asm volatile("MOV %0, LR":"=r"(LR));
+    asm volatile("MRS %0, LR_usr":"=r"(LR));
+    LR -= 4;
     kprintf("###########################################################################\n");
     kprintf("Software Interrupt aka Supervisor Call an Adresse 0x%08x\n",LR);
     register_reader(regs);
@@ -214,13 +245,30 @@ void software_interrupt_handler(){ // Supervisor Call
     kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
     status_registers(CPSR,1);
     status_registers(SPSR,0);
-    register_specific();
+    register_specific('s');
     kprintf("System angehalten\n");
-    //while(1);
+    while(1);
 }
 
 void data_abort_handler(){
-    kprintf("this is a data abort exception\n");
+      unsigned LR;
+      unsigned regs[16];
+      unsigned CPSR, SPSR;
+    asm volatile("MRS %0, CPSR": "=r"(CPSR));
+    kprintf("current status: 0x%08x\n",CPSR);
+    asm volatile("MRS %0, SPSR": "=r"(SPSR));
+    asm volatile("MRS %0, LR_usr":"=r"(LR));
+    LR -= 4;
+    kprintf("###########################################################################\n");
+    kprintf("Software Interrupt aka Supervisor Call an Adresse 0x%08x\n",LR);
+    register_reader(regs);
+    print_registers(regs);
+    kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
+    status_registers(CPSR,1);
+    status_registers(SPSR,0);
+    register_specific('s');
+    kprintf("System angehalten\n");
+    while(1);
 }
 
 void prefetch_abort_handler(){
@@ -229,8 +277,8 @@ void prefetch_abort_handler(){
       unsigned CPSR, SPSR;
     asm volatile("MRS %0, CPSR": "=r"(CPSR));
     asm volatile("MRS %0, SPSR": "=r"(SPSR));
-    asm volatile("MOV %0, LR":"=r"(LR));
-    LR = LR - 4;
+    asm volatile("MRS %0, LR_usr":"=r"(LR));
+    LR -= 8;
     kprintf("###########################################################################\n");
     kprintf("Prefetch Abort an Adresse 0x%08x\n",LR);
     print_IFSR_status();
@@ -239,7 +287,7 @@ void prefetch_abort_handler(){
     kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
     status_registers(CPSR,1);
     status_registers(SPSR,0);
-    register_specific();
+    register_specific('p');
     kprintf("System angehalten\n");
     while(1);
 }

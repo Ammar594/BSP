@@ -19,8 +19,6 @@ _ivt:
 reset:
 	bl _start
 
-not_used:
-
 undefined_instruction:
 	stmdb sp!,{r0-r12,lr}
 	mrs r0, spsr
@@ -46,16 +44,15 @@ software_interrupt:
 	ldmia sp!,{r8-r12,pc}^
 
 prefetch_abort:
-    adds lr, lr, #4
 	stmdb sp!,{r0-r12,lr}
-	mrs r0, spsr
-	mrs r1, cpsr
-	stmdb sp!, {r0-r1}
-	mov r0, sp
+	@ mrs r0, spsr
+	@ mrs r1, cpsr
+	@ stmdb sp!, {r0-r1}
+	@ mov r0, sp
 	bl prefetch_abort_handler
-	ldmia sp!, {r0-r1}
-	msr spsr_cxfs, r0
-	msr cpsr_cxfs, r1
+	@ ldmia sp!, {r0-r1}
+	@ msr spsr_cxfs, r0
+	@ msr cpsr_cxfs, r1
 	ldmia sp!,{r0-r12,pc}^
 	
 data_abort:
