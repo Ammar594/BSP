@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include<arch/bsp/uart.h>
 #include <arch/bsp/bcm2836.h>
-
+unsigned d = 0;
 void asm_write(uint32_t addr, uint32_t data) {
 	uint32_t *ptr = (uint32_t *)addr;
 	// just excuting a store command in assembly
@@ -20,15 +20,17 @@ uint32_t asm_read(uint32_t addr) {
 }
 
 void uart_init(void) {
-
-	asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25); // enable uart interrupt
-
+	
 	/* Disable UART */
 	asm_write(UART0_CR, 0x0);
-	asm_write(UART0_LCRH_FEN, 0x0);
-	asm_write(UART0_IMSC, 0);
+	/* enable uart interrupt*/
+	//asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25);
+	/* Disable FIFO */
+	asm_write(UART0_LCRH,UART0_LCRH|UART0_LCRH_FEN);
+	/* Enable recieiving raw interrupt */
+	asm_write(UART0_IMSC,UART0_IMSC|UART0_IMSC_RX);
 	/* Clear pending interrupts. */
-	asm_write(UART0_ICR, 0x7FF);
+	//asm_write(UART0_ICR, 0x7FF);
 	/* Enable UART0, receive, and transmit */
 	// enable transfer
 	asm_write(UART0_CR | UART0_CR_TXE, 0x1);
@@ -42,8 +44,6 @@ void uart_putc(unsigned char byte) {
 
 	/* Check Flags Register */
 	/* And wait until FIFO not full */
-	while ( asm_read(UART0_FR) & UART0_FR_TXFF) {
-	}
 	/* Write our data byte out to the data register */
 	asm_write(UART0_DR, byte);
 }

@@ -50,7 +50,6 @@ irq:
 	ldmia sp!,{r0-r12,pc}^
 
 fiq:
-	sub lr,lr, #8
 	stmdb sp!,{r0-r12,lr}
 	bl fiq_handler
 	ldmia sp!,{r0-r12,pc}^

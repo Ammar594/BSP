@@ -3,7 +3,7 @@
 #include <config.h>
 #include <arch/bsp/trampoline.h>
 #include <arch/bsp/sys_timer.h>
-
+#include<arch/bsp/handlers.h>
 void start_kernel(){
 	uart_init();
 	init_timer();
@@ -31,8 +31,10 @@ void start_kernel(){
     						 "bx lr");
 			break;
 		case 'd':
-			
-			break;				
+			d = 1;
+			break;
+		case 'e':
+								
 		default:
 			break;
 		}

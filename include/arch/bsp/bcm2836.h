@@ -13,9 +13,7 @@
 // System Timer Contorl/Status
 #define TIMER_BASE	(0x7e003000-0x3f000000)
 #define CS (TIMER_BASE+0x00)
-#define M0 (1 << 0) // System Timer Match 0
 #define M1 (1 << 1) // System Timer Match 1
-#define M2 (1 << 2) // System Timer Match 2
 #define M3 (1 << 3) // System Timer Match 3
 // System Timer Counter Lower 32 bits
 #define CLO (TIMER_BASE+0x04)
@@ -30,7 +28,6 @@
 /* Interrupts */
 /**************/
 /* Section 7 */
-			/*7e00b000 */
 #define IRQ_BASE	(IO_BASE+0xb000)
 #define IRQ_BASIC_PENDING	(IRQ_BASE+0x200)
 #define IRQ_PENDING1		(IRQ_BASE+0x204)

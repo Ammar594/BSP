@@ -51,7 +51,7 @@ _bsprak:
     LDR R0,= _ivt
     MCR p15,0,r0,c12,c0,0
 
-	/* enter User mode */
+	/* enter Supervisor mode and disable interrupts */
     MSR CPSR_cxfs, 0x3
 	/* Zu c Code springen */
 	bl  start_kernel

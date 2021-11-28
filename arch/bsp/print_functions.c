@@ -20,7 +20,6 @@ void print_regs(struct registers * regs){
     kprintf("0x%08x\n",regs->SPSR_und);
 }
 
-
 void print_registers(unsigned * regs){
     kprintf(">>> Registerschnappschuss (aktueller Modus) <<<\n");
     kprintf("R0:  0x%08x  R8:  0x%08x\n"
@@ -41,7 +40,6 @@ void print_registers(unsigned * regs){
             regs[7],regs[15]
             );
 } 
-
 
 void register_reader(unsigned * regs){
     asm volatile("mov %0, R0":"=r"(regs[0]));
@@ -196,14 +194,21 @@ void register_specific(char mode){
         asm volatile("MRS %0, SP_irq":"=r"(regs.SP_irq));
         asm volatile("MRS %0, SPSR_irq":"=r"(regs.SPSR_irq));
     }
+    else{
+        asm volatile("MOV %0, R14":"=r"(regs.LR_irq));
+        asm volatile("MOV %0, R13":"=r"(regs.SP_irq));
+        asm volatile("MRS %0, SPSR":"=r"(regs.SPSR_irq));
+    }
     if(mode != 'f'){
         asm volatile("MRS %0, LR_fiq":"=r"(regs.LR_fiq));
         asm volatile("MRS %0, SP_fiq":"=r"(regs.SP_fiq));
         asm volatile("MRS %0, SPSR_fiq":"=r"(regs.SPSR_fiq));
     }
-    
-    
-    
+    else{
+        asm volatile("MOV %0, R14":"=r"(regs.LR_fiq));
+        asm volatile("MOV %0, R13":"=r"(regs.SP_fiq));
+        asm volatile("MRS %0, SPSR_fiq":"=r"(regs.SPSR_fiq));
+    }
     status_register_flags(regs.SPSR_svc,regs.flags_svc);
     status_register_flags(regs.SPSR_abt,regs.flags_abt);
     status_register_flags(regs.SPSR_fiq,regs.flags_fiq);
