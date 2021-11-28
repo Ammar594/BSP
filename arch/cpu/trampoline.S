@@ -6,18 +6,23 @@ _ivt:
     LDR pc, _software_interrupt
     LDR pc, _prefetch_abort
     LDR pc, _data_abort
+	LDR pc, _not_used
     LDR pc, _irq
     LDR pc, _fiq
     _undefined_instruction: .word undefined_instruction
     _software_interrupt: .word software_interrupt
     _prefetch_abort: .word prefetch_abort
     _data_abort: .word data_abort
+	_not_used: .word not_used
     _irq: .word irq
     _fiq: .word fiq
     _reset: .word reset 
 
 reset:
 	bl _start
+
+not_used:
+	bl reset
 
 undefined_instruction:
 	stmdb sp!,{r0-r12,lr}
@@ -45,7 +50,9 @@ irq:
 	ldmia sp!,{r0-r12,pc}^
 
 fiq:
-	sub lr, #8
+	sub lr,lr, #8
 	stmdb sp!,{r0-r12,lr}
 	bl fiq_handler
 	ldmia sp!,{r0-r12,pc}^
+
+

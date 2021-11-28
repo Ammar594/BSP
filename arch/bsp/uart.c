@@ -1,15 +1,16 @@
 #include <stddef.h>
 #include <stdint.h>
+#include<arch/bsp/uart.h>
 #include <arch/bsp/bcm2836.h>
 
-static inline void asm_write(uint32_t addr, uint32_t data) {
+void asm_write(uint32_t addr, uint32_t data) {
 	uint32_t *ptr = (uint32_t *)addr;
 	// just excuting a store command in assembly
 	asm volatile("str %[data], [%[addr]]" :
 		: [addr]"r"(ptr), [data]"r"(data));
 }
 
-static inline uint32_t asm_read(uint32_t addr) {
+uint32_t asm_read(uint32_t addr) {
 	uint32_t *ptr = (uint32_t *)addr;
 	uint32_t data;
 	// just excuting a load command in assembly
@@ -19,6 +20,8 @@ static inline uint32_t asm_read(uint32_t addr) {
 }
 
 void uart_init(void) {
+
+	asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25); // enable uart interrupt
 
 	/* Disable UART */
 	asm_write(UART0_CR, 0x0);

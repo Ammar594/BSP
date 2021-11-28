@@ -2,17 +2,20 @@
 #include <arch/bsp/kprintf.h>
 #include <stdint.h>
 #include <arch/bsp/print_functions.h>
+#include <config.h>
+#include<arch/bsp/uart.h>
+#include <arch/bsp/bcm2836.h>
 
 void irq_handler(){
     kprintf("this is an IRQ interrupt\n");
+    asm_write(CS,CS|M3);
+    asm_write(C3,TIMER_INTERVAL + asm_read(CLO));
 }
-
 void fiq_handler(){
-    kprintf("this is a FIQ interrupt\n");
+   kprintf("this is a FIQ interrupt\n");
 }
 
 void undefined_instruction_handler(){
-    // store registers!
       unsigned LR;
       unsigned regs[16];
       unsigned CPSR, SPSR;
@@ -33,7 +36,6 @@ void undefined_instruction_handler(){
 }
 
 void software_interrupt_handler(){ // Supervisor Call
-    // store registers!
       unsigned LR;
       unsigned regs[16];
       unsigned CPSR, SPSR;

@@ -36,7 +36,7 @@
 // Timer Interrupt Interval zum testen in Mikrosekunden
 // Systimer taktet mit 1MHz
 // 1000000 -> 1 Sekunde
-#define TIMER_INTERVAL 10000000
+#define TIMER_INTERVAL 1000000
 
 
 #endif // _CONFIG_H_
