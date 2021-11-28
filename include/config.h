@@ -24,7 +24,7 @@
 
 #ifdef __QEMU__
 /* Werte zum testen unter QEMU */
-#define BUSY_WAIT_COUNTER 3000000
+#define BUSY_WAIT_COUNTER 500000
 #else
 /* Werte zum testen auf der Hardware */
 #define BUSY_WAIT_COUNTER 30000
@@ -36,7 +36,7 @@
 // Timer Interrupt Interval zum testen in Mikrosekunden
 // Systimer taktet mit 1MHz
 // 1000000 -> 1 Sekunde
-#define TIMER_INTERVAL 1000000
+#define TIMER_INTERVAL 2000000
 
 
 #endif // _CONFIG_H_

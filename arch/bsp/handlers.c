@@ -7,12 +7,25 @@
 #include <arch/bsp/bcm2836.h>
 #include <arch/bsp/handlers.h>
 void irq_handler(){
-    kprintf("this is an IRQ interrupt\n");
-    if(asm_read(IRQ_PENDING2 & 1 << 25) == 0b1){
-        kprintf("uart interrupt\n");
+    // checking for pending interrupts
+    uint32_t volatile timer_interrupt = asm_read(IRQ_PENDING1);
+    uint32_t volatile uart_interrupt = asm_read(IRQ_PENDING2);
+    if(timer_interrupt&M1){
+        kprintf("!\n");
+        asm_write(CS,CS|M1);
+        asm_write(C1,TIMER_INTERVAL + asm_read(CLO));
     }
-    asm_write(CS,CS|M3);
-    asm_write(C3,TIMER_INTERVAL + asm_read(CLO));
+    if(timer_interrupt&M3){
+        kprintf("timer2\n");
+        asm_write(CS,CS|M3);
+        asm_write(C3,BUSY_WAIT_COUNTER + asm_read(CLO));
+    }
+    if(uart_interrupt&1<<25){   
+        char c = uart_getc_interrupt();
+        kprintf("this is a char from uart interrupt: %c\n",c);
+        asm_write(UART0_IMSC,~UART0_IMSC|UART0_IMSC_RX);
+    }
+    
     if(d){
         unsigned LR;
         unsigned regs[16];

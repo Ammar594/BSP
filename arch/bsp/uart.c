@@ -20,31 +20,29 @@ uint32_t asm_read(uint32_t addr) {
 }
 
 void uart_init(void) {
-	
 	/* Disable UART */
-	asm_write(UART0_CR, 0x0);
+	// asm_write(UART0_CR, 0x0);
 	/* enable uart interrupt*/
-	//asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25);
+	// asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25);
 	/* Disable FIFO */
-	asm_write(UART0_LCRH,UART0_LCRH|UART0_LCRH_FEN);
-	/* Enable recieiving raw interrupt */
-	asm_write(UART0_IMSC,UART0_IMSC|UART0_IMSC_RX);
-	/* Clear pending interrupts. */
-	//asm_write(UART0_ICR, 0x7FF);
-	/* Enable UART0, receive, and transmit */
-	// enable transfer
-	asm_write(UART0_CR | UART0_CR_TXE, 0x1);
-	// enable recieve
-	asm_write(UART0_CR | UART0_CR_RXE, 0x1);
-	/* Enable UART */
-	asm_write(UART0_CR, 0x1);
+	// asm_write(UART0_LCRH,UART0_LCRH|UART0_LCRH_FEN);
+	// /* Clear pending interrupts. */
+	// asm_write(UART0_ICR, 0x7FF);
+	// /* Enable UART0, receive, and transmit */
+	// // enable transfer
+	// asm_write(UART0_CR,UART0_CR | UART0_CR_TXE);
+	// // enable recieve
+	// asm_write(UART0_CR,UART0_CR | UART0_CR_RXE);
+	// /* Enable UART */
+	// asm_write(UART0_CR, 0x1);
 }
 
 void uart_putc(unsigned char byte) {
-
 	/* Check Flags Register */
 	/* And wait until FIFO not full */
 	/* Write our data byte out to the data register */
+	while ( asm_read(UART0_FR) & UART0_FR_TXFF ) {
+	}
 	asm_write(UART0_DR, byte);
 }
 
@@ -58,6 +56,17 @@ unsigned char uart_getc(void) {
 	/* Note we are ignoring the top 4 error bits */
 	return asm_read(UART0_DR);
 }
+
+unsigned char uart_getc_interrupt(void) {
+	/* Note we are ignoring the top 4 error bits */
+	char c;
+	// while(asm_read(UART0_FR) & UART0_FR_RXFE){
+		
+	// }
+	c = asm_read(UART0_DR);
+	return c;
+}
+
 
 /* write a series of bytes to the serial port */
 void uart_write(const unsigned char* buffer, int size) {

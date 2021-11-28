@@ -4,6 +4,8 @@
 #include <arch/bsp/trampoline.h>
 #include <arch/bsp/sys_timer.h>
 #include<arch/bsp/handlers.h>
+#include<arch/bsp/bcm2836.h>
+#include<arch/bsp/regcheck.h>
 void start_kernel(){
 	uart_init();
 	init_timer();
@@ -11,7 +13,6 @@ void start_kernel(){
 	while(1){
 		kprintf("waiting for input....\n");
 		char c = uart_getc();
-		
 		switch (c)
 		{
 		case 's':
@@ -34,7 +35,13 @@ void start_kernel(){
 			d = 1;
 			break;
 		case 'e':
-								
+				 // start the timer
+				asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25);
+				asm_write(UART0_IMSC,UART0_IMSC|UART0_IMSC_RX);
+				while(1){
+				}	
+		case 'c':
+			register_checker();
 		default:
 			break;
 		}

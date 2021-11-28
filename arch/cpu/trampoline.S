@@ -30,9 +30,9 @@ undefined_instruction:
 	ldmia sp!,{r0-r12,pc}^
 
 software_interrupt:
-	stmdb sp!,{r8-r12,lr}
+	stmdb sp!,{r0-r12,lr}
 	bl software_interrupt_handler
-	ldmia sp!,{r8-r12,pc}^
+	ldmia sp!,{r0-r12,pc}^
 
 prefetch_abort:
 	stmdb sp!,{r0-r12,lr}
@@ -40,11 +40,13 @@ prefetch_abort:
 	ldmia sp!,{r0-r12,pc}^
 	
 data_abort:
+	sub lr,lr,#4
 	stmdb sp!,{r0-r12,lr}
 	bl data_abort_handler
 	ldmia sp!,{r0-r12,pc}^
 
 irq:
+	sub lr,lr,#4
 	stmdb sp!,{r0-r12,lr}
 	bl irq_handler
 	ldmia sp!,{r0-r12,pc}^
