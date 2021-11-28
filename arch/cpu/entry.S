@@ -52,7 +52,7 @@ _bsprak:
     MCR p15,0,r0,c12,c0,0
 
 	/* enter User mode */
-    MSR CPSR_cxfs, 0xD3
+    MSR CPSR_cxfs, 0x03
 	/* Zu c Code springen */
 	bl  start_kernel
 
