@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "kprintf.h": "c",
+        "print_functions.h": "c",
+        "bcm2836.h": "c"
+    }
+}

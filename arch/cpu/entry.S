@@ -1,5 +1,5 @@
-.section .init
 
+.section .init
 .global _start
 _start:
 	/* Erkennen ob Hypervisor Mode aktiv */
@@ -32,12 +32,31 @@ _enableAlignCheck:
 	/* neues SCTLR speichern */
 	mcr p15, 0, r0, c1, c0, 0
 
-
 _bsprak:
 	/* Validen Stack Pointer setzten */
 	ldr sp,=0x20000
+
+	LDR R0, =0x21000
+    MSR SP_usr, R0
+    LDR R0, =0x22000
+    MSR SP_irq, R0
+    LDR R0, =0x23000
+    MSR SP_fiq, R0
+    LDR R0, =0x24000
+    MSR SP_abt, R0
+    LDR R0, =0x25000
+    MSR SP_und, R0
+
+	/* IVT Address */
+    LDR R0,= _ivt
+    MCR p15,0,r0,c12,c0,0
+
+	/* enter Supervisor mode and disable interrupts */
+    MSR CPSR_cxfs, 0x3
 	/* Zu c Code springen */
 	bl  start_kernel
+
+
 .Lend:
 	WFI
 	b .Lend
