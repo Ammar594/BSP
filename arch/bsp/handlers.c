@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <arch/bsp/print_functions.h>
 #include <config.h>
-#include    <arch/bsp/uart.h>
+#include <arch/bsp/uart.h>
 #include <arch/bsp/bcm2836.h>
 #include <arch/bsp/handlers.h>
 void irq_handler(){

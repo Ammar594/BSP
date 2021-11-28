@@ -59,12 +59,8 @@ unsigned char uart_getc(void) {
 
 unsigned char uart_getc_interrupt(void) {
 	/* Note we are ignoring the top 4 error bits */
-	char c;
-	// while(asm_read(UART0_FR) & UART0_FR_RXFE){
-		
-	// }
-	c = asm_read(UART0_DR);
-	return c;
+	
+	return asm_read(UART0_DR);
 }
 
 
