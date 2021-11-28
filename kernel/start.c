@@ -4,38 +4,35 @@
 #include <arch/bsp/trampoline.h>
 #include <arch/bsp/sys_timer.h>
 
-volatile unsigned int counter = 0;
-
-void increment_counter() {
-	counter++;
-}
-
-
 void start_kernel(){
 	uart_init();
-	kprintf("Starting Kernel\n");
 	init_timer();
+	kprintf("Starting Kernel....\n");
 	while(1){
 		kprintf("waiting for input....\n");
 		char c = uart_getc();
+		
 		switch (c)
 		{
 		case 's':
-			__asm__ volatile("SWI 0xFFFFF");
+			__asm__ volatile("SWI 0xFFFFF"); // Supervisor Call
 			break;
 		case 'p':
-			__asm__ volatile("B 0xFFFFFFFF");
+			__asm__ volatile("B 0xFFFFFFFF"); // Prefetch Abort 
 			break;
 		case 'a':
-		   asm volatile("ldr r3,[fp, #-24]");
+		   asm volatile("ldr r3,[fp, #-24]"); // Data Abort
 		   asm volatile("ldrb r3,[r3]");
 			break;
 		case 'u':
-			__asm__ volatile(".globl TEST\n"
+			__asm__ volatile(".globl TEST\n" // Undefined Exception
 							 "TEST:\n"
     						 ".word 0xFFFFFFFF\n"
     						 "bx lr");
-			break;			
+			break;
+		case 'd':
+			
+			break;				
 		default:
 			break;
 		}

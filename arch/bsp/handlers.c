@@ -147,7 +147,7 @@ void print_IFSR_status(){
     unsigned IFAR;
      // reading IFSR and IFAR registers
     asm volatile("MRC p15, 0, %0, c5, c0, 1":"=r"(IFSR));
-    asm volatile("MRC p15, 0, %0, c5, c0, 1":"=r"(IFAR));
+    asm volatile("MRC p15, 0, %0, c6, c0, 2":"=r"(IFAR));
     IFSR = IFSR & 0x1F; // mask the status bits and set the other bits to 0
     if(IFSR == 0b00000) kprintf("No function, reset value\n");
     else if(IFSR == 0b00001) kprintf("Fehler: No function\n");
@@ -167,6 +167,34 @@ void print_IFSR_status(){
     else if(IFSR == 0b01111) kprintf("Fehler: Permission fault on Page\n");
     else if(IFSR >= 0b10000) kprintf("Fehler: No function\n");
     kprintf("Fehler: an der Adresse: 0x%08x \n",IFAR);
+}
+
+void print_DFSR_status(){
+    unsigned DFSR;
+    unsigned DFAR;
+     // reading IFSR and IFAR registers
+    asm volatile("MRC p15, 0, %0, c5, c0, 1":"=r"(DFSR));
+    asm volatile("MRC p15, 0, %0, c6, c0, 0":"=r"(DFAR));
+    DFSR = DFSR & 0x1F; // mask the status bits and set the other bits to 0
+    if(DFSR == 0b00000) kprintf("No function, reset value\n");
+    else if(DFSR == 0b00001) kprintf("Fehler: Alignment fault\n");
+    else if(DFSR == 0b00010) kprintf("Fehler: Debug event fault\n");
+    else if(DFSR == 0b00011) kprintf("Fehler: Access Flag fault on Section\n");
+    else if(DFSR == 0b00100) kprintf("Fehler: Cache maintenance operation fault\n");
+    else if(DFSR == 0b00101) kprintf("Fehler: Translation fault on Section\n");
+    else if(DFSR == 0b00110) kprintf("Fehler: Access Flag fault on Page\n");
+    else if(DFSR == 0b00111) kprintf("Fehler: Translation fault on Page\n");
+    else if(DFSR == 0b01000) kprintf("Fehler: Precise External Abort\n");
+    else if(DFSR == 0b01001) kprintf("Fehler: Domain fault on Section\n");
+    else if(DFSR == 0b01010) kprintf("Fehler: No function\n");
+    else if(DFSR == 0b01011) kprintf("Fehler: Domain fault on Page\n");
+    else if(DFSR == 0b01100) kprintf("Fehler: External abort on Section\n");
+    else if(DFSR == 0b01101) kprintf("Fehler: Permission fault on Section\n");
+    else if(DFSR == 0b01110) kprintf("Fehler: External abort on Page\n");
+    else if(DFSR == 0b01111) kprintf("Fehler: Permission fault on Page\n");
+    else if(DFSR == 0b10110) kprintf("Imprecise External Abort\n");
+    else kprintf("Fehler: No function\n");
+    kprintf("Fehler: an der Adresse: 0x%08x \n",DFAR);
 }
 
 void register_specific(char mode){
@@ -310,9 +338,10 @@ void data_abort_handler(){
     asm volatile("MRS %0, CPSR": "=r"(CPSR));
     asm volatile("MRS %0, SPSR": "=r"(SPSR));
     asm volatile("MRS %0, LR_usr":"=r"(LR));
-    LR -= 4;
+    LR -= 8;
     kprintf("###########################################################################\n");
     kprintf("Data Abort an Adresse 0x%08x\n",LR);
+    print_DFSR_status();
     register_reader(regs);
     print_registers(regs);
     kprintf(">>> Aktulle Statusregister (SPSR des aktullen Modus) <<<\n");
@@ -330,7 +359,7 @@ void prefetch_abort_handler(){
     asm volatile("MRS %0, CPSR": "=r"(CPSR));
     asm volatile("MRS %0, SPSR": "=r"(SPSR));
     asm volatile("MRS %0, LR_usr":"=r"(LR));
-    LR -= 8;
+    LR -= 4;
     kprintf("###########################################################################\n");
     kprintf("Prefetch Abort an Adresse 0x%08x\n",LR);
     print_IFSR_status();

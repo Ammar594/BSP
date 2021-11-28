@@ -18,12 +18,14 @@ static inline uint32_t asm_read(uint32_t addr) {
 	return data;
 }
 
-
 void uart_init(void) {
 
 	/* Disable UART */
 	asm_write(UART0_CR, 0x0);
 	asm_write(UART0_LCRH_FEN, 0x0);
+	asm_write(UART0_IMSC, 0);
+	/* Clear pending interrupts. */
+	asm_write(UART0_ICR, 0x7FF);
 	/* Enable UART0, receive, and transmit */
 	// enable transfer
 	asm_write(UART0_CR | UART0_CR_TXE, 0x1);
@@ -49,10 +51,8 @@ unsigned char uart_getc(void) {
 	/* Wait until Receive FIFO is not empty */
 	while ( asm_read(UART0_FR) & UART0_FR_RXFE ) {
 	}
-
 	/* Read and return the received data */
 	/* Note we are ignoring the top 4 error bits */
-
 	return asm_read(UART0_DR);
 }
 
