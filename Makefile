@@ -45,7 +45,7 @@
 BIN_LSG = 
 
 # Hier eure source files hinzufügen
-SRC = arch/cpu/entry.S arch/cpu/trampoline.S arch/bsp/trampoline.c kernel/start.c arch/bsp/uart.c arch/bsp/kprintf.c
+SRC = arch/cpu/entry.S arch/cpu/trampoline.S arch/bsp/handlers.c arch/bsp/sys_timer.c kernel/start.c arch/bsp/uart.c arch/bsp/kprintf.c
 
 # Hier separate user files hinzufügen
 USRC = user/main.c

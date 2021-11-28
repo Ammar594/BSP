@@ -1,5 +1,5 @@
-.section .init
 
+.section .init
 .global _start
 _start:
 	/* Erkennen ob Hypervisor Mode aktiv */
@@ -52,8 +52,7 @@ _bsprak:
     MCR p15,0,r0,c12,c0,0
 
 	/* enter User mode */
-    MSR CPSR_cxfs, 0xD0
-
+    MSR CPSR_cxfs, 0xD3
 	/* Zu c Code springen */
 	bl  start_kernel
 

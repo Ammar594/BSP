@@ -21,73 +21,31 @@ reset:
 
 undefined_instruction:
 	stmdb sp!,{r0-r12,lr}
-	mrs r0, spsr
-	mrs r1, cpsr
-	stmdb sp!, {r0-r1}
-	mov r0, sp
 	bl undefined_instruction_handler
-	ldmia sp!, {r0-r1}
-	msr spsr_cxfs, r0
-	msr cpsr_cxfs, r1
 	ldmia sp!,{r0-r12,pc}^
 
 software_interrupt:
 	stmdb sp!,{r8-r12,lr}
-	mrs r0, spsr
-	mrs r1, cpsr
-	stmdb sp!, {r0-r1}
-	mov r0, sp
 	bl software_interrupt_handler
-	ldmia sp!, {r0-r1}
-	msr spsr_cxfs, r0
-	msr cpsr_cxfs, r1
 	ldmia sp!,{r8-r12,pc}^
 
 prefetch_abort:
 	stmdb sp!,{r0-r12,lr}
-	@ mrs r0, spsr
-	@ mrs r1, cpsr
-	@ stmdb sp!, {r0-r1}
-	@ mov r0, sp
 	bl prefetch_abort_handler
-	@ ldmia sp!, {r0-r1}
-	@ msr spsr_cxfs, r0
-	@ msr cpsr_cxfs, r1
 	ldmia sp!,{r0-r12,pc}^
 	
 data_abort:
 	stmdb sp!,{r0-r12,lr}
-	mrs r0, spsr
-	mrs r1, cpsr
-	stmdb sp!, {r0-r1}
-	mov r0, sp
 	bl data_abort_handler
-	ldmia sp!, {r0-r1}
-	msr spsr_cxfs, r0
-	msr cpsr_cxfs, r1
 	ldmia sp!,{r0-r12,pc}^
 
 irq:
 	stmdb sp!,{r0-r12,lr}
-	mrs r0, spsr
-	mrs r1, cpsr
-	stmdb sp!, {r0-r1}
-	mov r0, sp
 	bl irq_handler
-	ldmia sp!, {r0-r1}
-	msr spsr_cxfs, r0
-	msr cpsr_cxfs, r1
 	ldmia sp!,{r0-r12,pc}^
 
 fiq:
 	sub lr, #8
 	stmdb sp!,{r0-r12,lr}
-	mrs r0, spsr
-	mrs r1, cpsr
-	stmdb sp!, {r0-r1}
-	mov r0, sp
 	bl fiq_handler
-	ldmia sp!, {r0-r1}
-	msr spsr_cxfs, r0
-	msr cpsr_cxfs, r1
 	ldmia sp!,{r0-r12,pc}^

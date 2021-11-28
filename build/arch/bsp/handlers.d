@@ -1,4 +1,4 @@
-build/arch/bsp/trampoline.o: arch/bsp/trampoline.c \
+build/arch/bsp/handlers.o: arch/bsp/handlers.c \
  include/arch/bsp/trampoline.h include/arch/bsp/kprintf.h
 include/arch/bsp/trampoline.h:
 include/arch/bsp/kprintf.h:

@@ -2,6 +2,7 @@
 #include <arch/bsp/uart.h>
 #include <config.h>
 #include <arch/bsp/trampoline.h>
+#include <arch/bsp/sys_timer.h>
 
 volatile unsigned int counter = 0;
 
@@ -13,6 +14,7 @@ void increment_counter() {
 void start_kernel(){
 	uart_init();
 	kprintf("Starting Kernel\n");
+	init_timer();
 	while(1){
 		kprintf("waiting for input....\n");
 		char c = uart_getc();
