@@ -6,23 +6,28 @@
 #include <arch/bsp/uart.h>
 #include <arch/bsp/bcm2836.h>
 #include <arch/bsp/handlers.h>
+#include <arch/bsp/ring_buffer.h>
+extern ring_buffer buffer;
 void irq_handler(){
     // checking for pending interrupts
     uint32_t volatile timer_interrupt = asm_read(IRQ_PENDING1);
     uint32_t volatile uart_interrupt = asm_read(IRQ_PENDING2);
     if(timer_interrupt&M1){
+        remove_element(&buffer);
         kprintf("!\n");
         asm_write(CS,CS|M1);
         asm_write(C1,TIMER_INTERVAL + asm_read(CLO));
     }
     if(timer_interrupt&M3){
-        kprintf("timer2\n");
+        char c = peek_element(&buffer);
+        kprintf("%c",c);
         asm_write(CS,CS|M3);
         asm_write(C3,BUSY_WAIT_COUNTER + asm_read(CLO));
     }
     if(uart_interrupt&1<<25){   
         char c = uart_getc_interrupt();
-        kprintf("this is a char from uart interrupt: %c\n",c);
+        add_element(&buffer,c);
+        //kprintf("this is a char from uart interrupt: %c\n",c);
         asm_write(UART0_IMSC,~UART0_IMSC|UART0_IMSC_RX);
     }
     

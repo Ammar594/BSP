@@ -6,6 +6,7 @@
 #include<arch/bsp/handlers.h>
 #include<arch/bsp/bcm2836.h>
 #include<arch/bsp/regcheck.h>
+#include<arch/bsp/start.h>
 void start_kernel(){
 	uart_init();
 	init_timer();
@@ -38,6 +39,7 @@ void start_kernel(){
 				 // start the timer
 				asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25);
 				asm_write(UART0_IMSC,UART0_IMSC|UART0_IMSC_RX);
+				ring_buffer_init(&buffer);
 				while(1){
 				}	
 		case 'c':
