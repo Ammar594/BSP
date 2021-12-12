@@ -13,21 +13,37 @@ void irq_handler(){
     uint32_t volatile timer_interrupt = asm_read(IRQ_PENDING1);
     uint32_t volatile uart_interrupt = asm_read(IRQ_PENDING2);
     if(timer_interrupt&M1){
-        remove_element(&buffer);
         kprintf("!\n");
         asm_write(CS,CS|M1);
         asm_write(C1,TIMER_INTERVAL + asm_read(CLO));
     }
     if(timer_interrupt&M3){
-        char c = peek_element(&buffer);
-        kprintf("%c",c);
         asm_write(CS,CS|M3);
         asm_write(C3,BUSY_WAIT_COUNTER + asm_read(CLO));
     }
     if(uart_interrupt&1<<25){   
         char c = uart_getc_interrupt();
-        add_element(&buffer,c);
-        //kprintf("this is a char from uart interrupt: %c\n",c);
+        switch (c)
+        {
+        case 'S':
+            __asm__ volatile("SWI 0xFFFFF"); // Supervisor Call
+            break;
+        case 'P':
+            __asm__ volatile("B 0xFFFFFFFF"); // Prefetch Abort 
+            break;
+        case 'A':
+            asm volatile("ldr r3,[fp, #-24]"); // Data Abort
+		    asm volatile("ldrb r3,[r3]");
+            break;
+        case 'U':
+            __asm__ volatile(".globl TEST\n" // Undefined Exception
+							 "TEST:\n"
+    						 ".word 0xFFFFFFFF\n"
+    						 "bx lr");
+            break;             
+        default:
+            break;
+        }
         asm_write(UART0_IMSC,~UART0_IMSC|UART0_IMSC_RX);
     }
     

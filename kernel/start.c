@@ -26,12 +26,6 @@ void start_kernel(){
 		   asm volatile("ldr r3,[fp, #-24]"); // Data Abort
 		   asm volatile("ldrb r3,[r3]");
 			break;
-		case 'u':
-			__asm__ volatile(".globl TEST\n" // Undefined Exception
-							 "TEST:\n"
-    						 ".word 0xFFFFFFFF\n"
-    						 "bx lr");
-			break;
 		case 'd':
 			d = 1;
 			break;
