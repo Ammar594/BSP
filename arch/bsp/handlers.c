@@ -7,6 +7,9 @@
 #include <arch/bsp/bcm2836.h>
 #include <arch/bsp/handlers.h>
 #include <arch/bsp/ring_buffer.h>
+#include <arch/bsp/thread_managment.h>
+#include <arch/bsp/userthread.h>
+
 extern ring_buffer buffer;
 void irq_handler(){
     // checking for pending interrupts
@@ -18,11 +21,15 @@ void irq_handler(){
         asm_write(C1,TIMER_INTERVAL + asm_read(CLO));
     }
     if(timer_interrupt&M3){
+        thread_switch();
         asm_write(CS,CS|M3);
         asm_write(C3,BUSY_WAIT_COUNTER + asm_read(CLO));
     }
     if(uart_interrupt&1<<25){   
         char c = uart_getc_interrupt();
+        kprintf("%c\n", c);
+        // create new thread
+        thread_create(&main,&c,1);
         switch (c)
         {
         case 'S':
