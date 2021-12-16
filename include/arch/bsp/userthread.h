@@ -1,5 +1,5 @@
 #ifndef USERTHREAD_H
 #define USERTHREAD_H
 #include <arch/bsp/kprintf.h>
-void main(void *x);
+void main1(void *x);
 #endif

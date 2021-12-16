@@ -24,7 +24,7 @@
 
 #ifdef __QEMU__
 /* Werte zum testen unter QEMU */
-#define BUSY_WAIT_COUNTER 5000000
+#define BUSY_WAIT_COUNTER 2000000
 #else
 /* Werte zum testen auf der Hardware */
 #define BUSY_WAIT_COUNTER 30000

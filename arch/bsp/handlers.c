@@ -21,7 +21,7 @@ void irq_handler(){
         asm_write(C1,TIMER_INTERVAL + asm_read(CLO));
     }
     if(timer_interrupt&M3){
-        thread_switch();
+        start_thread();
         asm_write(CS,CS|M3);
         asm_write(C3,BUSY_WAIT_COUNTER + asm_read(CLO));
     }
@@ -29,7 +29,8 @@ void irq_handler(){
         char c = uart_getc_interrupt();
         kprintf("%c\n", c);
         // create new thread
-        thread_create(&main,&c,1);
+        int tid = thread_create(&main1,&c,1);
+        kprintf("Thread %i created.\n",tid);
         switch (c)
         {
         case 'S':

@@ -22,6 +22,6 @@ void init_tcbs(); // init thread with zeroes
 void idle_thread();
 
 void thread_switch();
-
-void thread_create(void (*func)(void *), const void * args,unsigned int args_size);
+void start_thread();
+int thread_create(void (*func)(void *), const void * args,unsigned int args_size);
 #endif
