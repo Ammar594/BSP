@@ -6,23 +6,56 @@
 #include <arch/bsp/uart.h>
 #include <arch/bsp/bcm2836.h>
 #include <arch/bsp/handlers.h>
+#include <arch/bsp/ring_buffer.h>
+#include <arch/bsp/thread_managment.h>
+#include <arch/bsp/userthread.h>
+
+extern ring_buffer buffer;
 void irq_handler(){
+    
     // checking for pending interrupts
     uint32_t volatile timer_interrupt = asm_read(IRQ_PENDING1);
     uint32_t volatile uart_interrupt = asm_read(IRQ_PENDING2);
+    if(timer_interrupt&M3){
+        kprintf("switching\n");
+        asm_write(CS,CS|M3);
+        switch_thread(0);
+        asm_write(C3,BUSY_WAIT_COUNTER + asm_read(CLO));
+    }
     if(timer_interrupt&M1){
         kprintf("!\n");
         asm_write(CS,CS|M1);
         asm_write(C1,TIMER_INTERVAL + asm_read(CLO));
     }
-    if(timer_interrupt&M3){
-        kprintf("timer2\n");
-        asm_write(CS,CS|M3);
-        asm_write(C3,BUSY_WAIT_COUNTER + asm_read(CLO));
-    }
-    if(uart_interrupt&1<<25){   
+    
+    if(uart_interrupt&1<<25){
         char c = uart_getc_interrupt();
-        kprintf("this is a char from uart interrupt: %c\n",c);
+        kprintf("%c\n", c);
+        // create new thread
+        //int tid = thread_create(&main1,&c,1);
+        int tid = thread_create1(&main2);
+        kprintf("Thread %i created.\n",tid);
+        switch (c)
+        {
+        case 'S':
+            __asm__ volatile("SWI 0xFFFFF"); // Supervisor Call
+            break;
+        case 'P':
+            __asm__ volatile("B 0xFFFFFFFF"); // Prefetch Abort 
+            break;
+        case 'A':
+            asm volatile("ldr r3,[fp, #-24]"); // Data Abort
+		    asm volatile("ldrb r3,[r3]");
+            break;
+        case 'U':
+            __asm__ volatile(".globl TEST\n" // Undefined Exception
+							 "TEST:\n"
+    						 ".word 0xFFFFFFFF\n"
+    						 "bx lr");
+            break;             
+        default:
+            break;
+        }
         asm_write(UART0_IMSC,~UART0_IMSC|UART0_IMSC_RX);
     }
     
@@ -102,7 +135,7 @@ void software_interrupt_handler(){ // Supervisor Call
     status_registers(SPSR,0);
     register_specific('s');
     kprintf("System angehalten\n");
-    while(1);
+    //while(1);
 }
 
 void data_abort_handler(){

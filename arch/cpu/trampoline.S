@@ -45,11 +45,28 @@ data_abort:
 	bl data_abort_handler
 	ldmia sp!,{r0-r12,pc}^
 
+// IRQ Hander asm
 irq:
 	sub lr,lr,#4
+	push {r0-r12}
+	mrs r0, sp_usr
+	mrs r1, lr_usr
+	push {r0,r1,lr}
+	mov r0, sp
+	bl store_regs
+	pop {r0,r1,lr}
+	pop {r0-r12}
+
 	stmdb sp!,{r0-r12,lr}
 	bl irq_handler
-	ldmia sp!,{r0-r12,pc}^
+	ldmia sp! ,{r0-r12,lr}
+
+	mrs r0, spsr
+	msr cpsr, r0
+
+	ldr r0, =start_thread
+	mov pc, r0
+
 
 fiq:
 	stmdb sp!,{r0-r12,lr}
