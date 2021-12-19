@@ -114,7 +114,7 @@ void start_thread(){
                  "pop {r1}\n"
                  "pop {r0}\n"
                  "pop {lr}\n"
-                 //"add r0, sp, #4\n"
+                 "add r0, sp, #4\n"
                  "pop {pc}\n"
                 );
 }
