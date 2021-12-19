@@ -13,9 +13,7 @@ void start_kernel(){
 	init_timer();
 	asm_write(IRQ_ENABLE_IRQ2,IRQ_ENABLE_IRQ2|1<<25);
 	asm_write(UART0_IMSC,UART0_IMSC|UART0_IMSC_RX);
-	kprintf("Starting Kernel....\n");
-	kprintf("Intilizing threads...\n");
 	init_tcbs();
-	kprintf("Entering idle thread...\n");
-	idle_thread();
+	start_idle_thread();
+	start_thread();
 }
