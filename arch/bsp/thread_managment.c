@@ -12,22 +12,28 @@ int thread_create(void (*func)(void *), const void * args,unsigned int args_size
         if(tcbs[i].state == FINISHED){ // if free thread holder ...
             tcbs[i].state = READY;
             tcbs[i].pc = (uint32_t)func; // setting jump address -> programm counter
-            unsigned int temp;
-            asm volatile("push {r0-r12}");
-            asm volatile("mov %0, sp":"=r"(temp));
-            asm volatile("mov sp, %0"::"r"(tcbs[i].sp));
-            for(unsigned int j=0;j<args_size;j++){
-                asm volatile("push {%0}"::"r"(args));
+            tcbs[i].sp =(uint32_t *)sp_offset - (i * 1000);
+            // uint32_t temp;
+            // asm volatile("push {r0-r12}");
+            // asm volatile("mov %0, sp":"=r"(temp));
+            // asm volatile("mov sp, %0"::"r"(tcbs[i].sp));
+            // for(unsigned int j=0;j<args_size;j++){
+            //     asm volatile("push {%0}"::"r"(args));
+            // }
+            // asm volatile("push {%0}"::"r"(args));
+            // asm volatile("mov %0, sp":"=r"(tcbs[i].sp));
+            // asm volatile("mov sp, %0"::"r"(temp));
+            // asm volatile("pop {r0-r12}");
+            for(unsigned int j =0;j<args_size;j++){
+                *tcbs[i].sp = (uint32_t)args;
                 args++;
+                tcbs[i].sp += 4;
             }
-            asm volatile("push {%0}"::"r"(args));
-            asm volatile("mov %0, sp":"=r"(tcbs[i].sp));
-            asm volatile("mov sp, %0"::"r"(temp));
-            asm volatile("pop {r0-r12}");
+            
             return tcbs[i].tid;
         }
     }
-    return -1;
+   return -1;
 }
 
 int thread_create1(void (*func)()){
@@ -35,7 +41,7 @@ int thread_create1(void (*func)()){
         if(tcbs[i].state == FINISHED){ // if free thread holder ...
             tcbs[i].state = READY;
             tcbs[i].pc = (uint32_t)func; // setting jump address -> programm counter
-            tcbs[i].sp= (uint32_t)sp_offset - (i * 1000); // setting stack pointer
+            tcbs[i].sp= (uint32_t *)sp_offset - (i * 1000); // setting stack pointer
             return tcbs[i].tid;
         }
     }
@@ -46,7 +52,7 @@ void init_tcbs(){
     for(int i = 0;i<32;i++){
         tcbs[i].state = FINISHED; // initialize as finished -> free to create new thread
         tcbs[i].tid = i;
-        tcbs[i].sp =(uint32_t )sp_offset - (i * 1000);
+        tcbs[i].sp =(uint32_t *)sp_offset - (i * 1000);
         tcbs[i].lr = 0;
     }
 }

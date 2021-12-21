@@ -32,8 +32,8 @@ void irq_handler(){
         char c = uart_getc_interrupt();
         kprintf("%c\n", c);
         // create new thread
-        //int tid = thread_create(&main1,&c,1);
-        int tid = thread_create1(&main2);
+        int tid = thread_create(&main1,&c,1);
+        //int tid = thread_create1(&main2);
         kprintf("Thread %i created.\n",tid);
         switch (c)
         {

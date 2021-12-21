@@ -13,14 +13,13 @@ struct tcb {
     enum thread_state state;   
     int tid;
     uint32_t regs[13]; // R0-R12
-    uint32_t sp; // SP
+    uint32_t * sp; // SP
     uint32_t lr; // LR
     uint32_t pc;
     uint32_t SPSR;    // SPSR-CPSR
 };
-
 struct tmp{
-    uint32_t sp;
+    uint32_t *sp;
     uint32_t lr;
     uint32_t pc;
     uint32_t regs[13];
